@@ -1,20 +1,17 @@
-#+title: Index
+#+title: Aryaman Jeendgar
+#+options: toc:nil
+# #+HTML_CONTAINER: <script src="https://dohliam.github.io/dropin-minimal-css/switcher.js" type="text/javascript"></script>
 
-* Welcome to my website!!!:
-This is supposed to be my website! Welcome brothers, I am doing de work of de gawds
-#+begin_src python
-    # these are some nice code blocks
-    import cvxpy as cp
-    import numpy as np
-    X = np.eye(3, 3)
-    print("Hello world, of the brothas")
-#+end_src
-#+begin_src cpp
-#include <iostream>
-using namespace std;
+| [[about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
+* About:
+<<about>>
 
-    int main() {
-        cout << "Hello, world" << endl;
-    }
-#+end_src
-You can find some of my reviews for the papers that I read, [[file:PaperReviews.org][here]]
+#+attr_html: :style display:inline; max-width:35%;margin-left:auto;margin-right:auto
+[[file:./me.jpg]] Hi! I am Aryaman Jeendgar, a 3rd year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
+
+Broadly, I am interested in research problems with a mathematical flavor, and love writing code to serve solutions to such problems!
+
+
+I will be spending this summer writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Emerging Visual/AI Systems (EVS)/ Research group!
+
+In the past, I have worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] (BITS Goa) and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] (Wadhwani AI), a pre-print of our latest work can be found [[https://www.researchgate.net/publication/360464973_LogGENE_A_smooth_alternative_to_check_loss_for_Deep_Healthcare_Inference_Tasks][*HERE*]].

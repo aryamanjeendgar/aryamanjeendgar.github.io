@@ -1,4 +1,3 @@
-#+title: Paper Reviews
+#+title: Nice Papers
 
-* FSP2017 review:
-This is the paper that I will primarily be referencing for my gsoc work
+1. [[https://arxiv.org/abs/1705.00812][Semidefinite approximations of the matrix logarithm]]: Find (an evolving) commentary on the paper [[file:blog.org::FSP,review][*HERE*]]
