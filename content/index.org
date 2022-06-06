@@ -1,0 +1,20 @@
+#+title: Index
+
+* Welcome to my website!!!:
+This is supposed to be my website! Welcome brothers, I am doing de work of de gawds
+#+begin_src python
+    # these are some nice code blocks
+    import cvxpy as cp
+    import numpy as np
+    X = np.eye(3, 3)
+    print("Hello world, of the brothas")
+#+end_src
+#+begin_src cpp
+#include <iostream>
+using namespace std;
+
+    int main() {
+        cout << "Hello, world" << endl;
+    }
+#+end_src
+You can find some of my reviews for the papers that I read, [[file:PaperReviews.org][here]]
