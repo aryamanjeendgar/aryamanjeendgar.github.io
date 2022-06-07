@@ -8,6 +8,27 @@
 <title>Blog</title>
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" href="https://latex.now.sh/style.css" />
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="content" class="content">
@@ -16,28 +37,133 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgcf6e96f"><i>Semidefinite approximations of the matrix logarithm</i>, a commentary:</a></li>
-<li><a href="#org17393d5">Implementing the Von Neumann Entropy in CVXPY:</a></li>
+<li><a href="#org8f84749"><i>Semidefinite approximations of the matrix logarithm</i>, a commentary:</a></li>
+<li><a href="#org026139c">Implementing the Von Neumann Entropy in CVXPY:</a>
+<ul>
+<li><a href="#org79d0bd1">References:</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 
-
-<div id="outline-container-orgcf6e96f" class="outline-2">
-<h2 id="orgcf6e96f"><i>Semidefinite approximations of the matrix logarithm</i>, a commentary:</h2>
-<div class="outline-text-2" id="text-orgcf6e96f">
+<div id="outline-container-org8f84749" class="outline-2">
+<h2 id="org8f84749"><i>Semidefinite approximations of the matrix logarithm</i>, a commentary:</h2>
+<div class="outline-text-2" id="text-org8f84749">
 <p>
-<a id="org4bf1380"></a>
+<a id="orgccb488b"></a>
 </p>
 </div>
 </div>
 
-<div id="outline-container-org17393d5" class="outline-2">
-<h2 id="org17393d5">Implementing the Von Neumann Entropy in CVXPY:</h2>
-<div class="outline-text-2" id="text-org17393d5">
+<div id="outline-container-org026139c" class="outline-2">
+<h2 id="org026139c">Implementing the Von Neumann Entropy in CVXPY:</h2>
+<div class="outline-text-2" id="text-org026139c">
 <p>
-<span class="timestamp-wrapper"><span class="timestamp">&lt;2022-06-06 Mon&gt;</span></span>
+<span class="timestamp-wrapper"><span class="timestamp">&lt;2022-06-06 Mon&gt;</span></span><br />
+In this post I want to talk about <a href="https://github.com/cvxpy/cvxpy/pull/1789">my PR</a> for appending support for the <a href="https://en.wikipedia.org/wiki/Von_Neumann_entropy">Von Neumann Entropy</a> as an atom in <a href="https://www.cvxpy.org/">CVXPY</a>.
 </p>
+
+<p>
+At the highest level, what it means for 'adding support' for an atom in CVXPY, is to implement the function in question to allow it to be utilized by the user to the end of constructing mathematical programs &#x2014; in CVXPY terms, this means figuring out a correct <i>Canonicalization</i> for the atom into other, more simpler atoms (whose canonicalizations we may already have access to), this is the fundamental approach with which CVXPY internally assembles complex mathematical programs, the so-called, <i>Disciplined convex programming</i> <a href="https://web.stanford.edu/~boyd/papers/pdf/mcg_thesis.pdf">[1]​</a> approach to problem construction.
+</p>
+
+<p>
+Hence, the first (and the most important) step to implementing the atom, is to find a 'correct' canonicalization for it, in this case, one may be found in: <a href="https://link.springer.com/article/10.1007/s10107-016-0998-2">[2]​</a> (specifically, <i>proposition-4</i> of the same). A nuance that we encountered in it's implementation was the fact that <code>dcp2cone</code> type canonicalization methods (namely, methods that reduce a <i>Disciplined Convex Programming</i> problem to it's equivalent conic constraints), may only strictly return <i>conic</i> constraints, i.e. there is no recursive canonicalization that is undertaken by CVXPY in order to reduce some otherwise non-conic atoms to their conic equivalents, and this needs to be explicitly done by calling their respective <code>canon</code> methods.
+</p>
+
+<p>
+The implementation of the function itself is couched in the <code>numeric</code> method of the parent structure of the class, and is simply the function: \(S(\rho)=-\sum_{x}\lambda_{x}\log\lambda_{x}\) (may be read as the 'Shannon entropy of the spectrum of the operator/matrix').
+</p>
+
+<p>
+Now comes the (surprisingly) hard part &#x2014; writing test cases! In contrast to my last contribution to CVXPY, where I had plenty of verified programs to refer to from the literature, nothing of the sort existed for the Von Neumann entropy, and hence the struggle for constructing verifiable test cases starts!
+</p>
+
+<p>
+All in all, we ended up thinking of three distinct ways of constructing programs whose correctness could be otherwise verified. Each of them involves imposing a combination of constraints that make it 'easy' to 'see' the correct solution. I describe each of them below:
+</p>
+<ol class="org-ol">
+<li>Fix the 'first' \(n-1\) eigenvectors and eigenvalues of the matrix to be optimized. There are now two points of immediate relevance that become available:
+<ol class="org-ol">
+<li>We can figure out the final, unspecified eigenvector (to within a sign change!) given the other \(n-1\). An algorithm for doing the same is:
+<ol class="org-ol">
+<li>Generate a set of \(n-1\) orthonormal vectors (to uniquely characterize the subspace that we will be projecting onto), do this by taking some matrix with linearly independent columns, and passing it through <code>np.linalg.qr(.)</code>.</li>
+<li>The next step would be to construct the projection matrix (for projecting onto the \(n-1\) -dimensional subspace spanned by the above generated vectors). Can simply be done by stacking the above vectors column wise into a matrix \(V\) and taking \(V @ V.T\) (where \(@\) represents matrix multiplication).</li>
+<li>Subtract from \(I_{(n,n)}\) to get the one dimensional projector, apply this to some randomly generated vector \(\boldsymbol{x}\in\mathcal{R}^{n}\) to obtain the final eigenvector (scaled, will have to normalize)</li>
+</ol></li>
+<li>The final eigenvalue may be computed by hand (given an additional constraint of the form \(tr(X) < c\) (or \(tr(X) > c\))) because of the form of the objective function (as indicated above). This can be seen by first observing the state of the objective function when one has access to \(n-1\) eigenvalues, namely \(\text{min}-\lambda_{n}\log\lambda_{n} + C_{1}\), where \(C_{1}=\sum_{i=1}^{n-1}\lambda_{i}\log\lambda_{i}\), now if we say, know \(tr(X) < C_{2}\) i.e. \(\sum_{i}\lambda_{i} < C_{2}\), by leveraging the monotonicity of the Von-Neumann entropy before and after \(1/e\), we can arrive at a closed form answer for the optimal value of the final eigenvalue (and since we have all unique eigenvectors in these generated examples, the optimal matrix as well).</li>
+</ol></li>
+<li><p>
+Moving on from eigenvalue constraints, we now turn our attention to <a href="https://www.cvxpy.org/examples/basic/sdp.html">SDP problems</a>. Our first method of constructing programs involves no appeal to the construction of the dual of the SDP. It isn't hard to convince oneself of the equivalence of the following two CVXPY programs (in light of the above discussion):
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">Program- 1</span>
+<span style="font-style: italic;">"""</span>
+<span style="font-weight: bold; font-style: italic;">X</span> = cp.Variable(shape = (3,3), PSD = <span style="font-weight: bold; text-decoration: underline;">True</span>)
+objective = cp.Minimize(-von_neumann_entr(X))
+cons1 = trace(A1 @ X) == b[0]
+cons2 = trace(A2 @ X) == b[1]
+cons3 = X - cp.diag(cp.diag(X)) == 0 <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">equivalent to 'diag=True'</span>
+prob = cp.Problem(objective, [cons1, cons2, cons3])
+
+<span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">Program-2</span>
+<span style="font-style: italic;">"""</span>
+X = cp.Variable(shape = (3,3), diag = <span style="font-weight: bold; text-decoration: underline;">True</span>)
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">following objective is equivalent to '-von_neumann_entr'</span>
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">in the case of X \in diag(v)</span>
+objective = cp.Minimize(-cp.<span style="font-weight: bold;">sum</span>(cp.entr(cp.diag(X))))
+cons1 = trace(A1 @ X) == b[0]
+cons2 = trace(A2 @ X) == b[1]
+cons3 = X &gt;&gt; 0
+prob = cp.Problem(objective, [cons1, cons2, cons3])
+</pre>
+</div>
+<p>
+Hence, we note that, since <i>program-2</i> is an equivalent construction to <i>program-1</i> (but does not involve the <code>von_neumann_entr(.)</code> function in it's construction, i.e., is built off of elements whose correctness has already been verified), it may be used to verify the correctness of <i>program-1</i>!
+</p></li>
+<li><p>
+We again continue on with SDPs, this time, we want to construct test cases that leverage elements of the dual problem of the SDP &#x2014; in the case of convex programs, this means writing out the <a href="https://en.wikipedia.org/wiki/Karush%E2%80%93Kuhn%E2%80%93Tucker_conditions">KKT conditions</a> for the primal problem. Our goal is to be able to construct as many valid SDPs as possible (notice that the form of the Von Neumann entropy fits well with that of the objective function of an SDP), to that end, all we have to do is write out the valid domains of the involved variables in the program, specify a subset of them, and ensure that the constraints that we computed on the rest are satisfied &#x2014; not just the \(A_{i}\)'s, \(C\) and \(X\), but also of how the values of these variables effect the feasibility of the dual problem. One can show that the dual problem to the standard SDP is:
+</p>
+\begin{equation*}
+ \begin{aligned}
+ & \underset{y\in\mathcal{R}^{m}}{\text{max}}
+ & & \langle b, y\rangle \\
+ & \text{subject to}
+ & & C=S+\underset{i\in[m]}{\sum}A_{i}y_{i}\\
+ & & & S \succeq 0
+ \end{aligned}
+\end{equation*}
+<p>
+Writing the KKT conditions of the above problem involves writing out the so-called <i>Stationary Lagrangian</i> and <i>Complementary slackness</i> equations &#x2014; the former involves writing out the derivative of the objective function (in this case, the Von Neumann entropy), note that, in the SDP formulation, the matrix \(C\) can be thought of as the derivative of the objective because of the matrix identity: \(\nabla_{A}tr(AB)=B^{T}\), and further, one may derive the matrix derivative of the Von Neumann entropy AT some matrix \(X\) using the methods of <a href="https://people.orie.cornell.edu/aslewis/publications/96-derivatives.pdf">[3]​</a> to be \(I_{(n,n)} + \text{logm}(X)\) (where \(logm\) is the <a href="https://en.wikipedia.org/wiki/Logarithm_of_a_matrix">matrix logarithm</a>).
+</p>
+
+<p>
+The drawback with this approach is captured in the following theorem <a href="https://web.stanford.edu/~yyye/SDP-Rigidity.pdf">[4]​</a>:
+</p>
+<div class="org-center">
+<p>
+<i>Let \(X^{*}\) be a <b>max-rank</b> solution of an SDP and let \(X^{*}=P^{T}P\), where \(P\in\mathcal{R}^{r\times n}\). Then \(X^{*}\) is the unique solution for the SDP if and only if the null space of the linear space spanned by \(PA_{i}P^{T}, \quad i\in[m]\) is \(\{0\}\)</i>
+</p>
+</div>
+<p>
+Namely, an SDP won't always have a unique solution, and it is not very straightforward to verify whether it does or not.
+</p></li>
+</ol>
+</div>
+
+<div id="outline-container-org79d0bd1" class="outline-3">
+<h3 id="org79d0bd1">References:</h3>
+<div class="outline-text-3" id="text-org79d0bd1">
+<p>
+[1]:
+[2]:
+[3]:
+[4]:
+</p>
+</div>
 </div>
 </div>
 </div>
