@@ -1,0 +1,70 @@
+#+title: VN Entropy
+
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
+* Implementing the Von Neumann Entropy in CVXPY:
+<2022-06-06 Mon>\\
+In this post I want to talk about [[https://github.com/cvxpy/cvxpy/pull/1789][my PR]] for appending support for the [[https://en.wikipedia.org/wiki/Von_Neumann_entropy][Von Neumann Entropy]] as an atom in [[https://www.cvxpy.org/][CVXPY]].
+
+At the highest level, what it means for 'adding support' for an atom in CVXPY, is to implement the function in question to allow it to be utilized by the user to the end of constructing mathematical programs --- in CVXPY terms, this means figuring out a correct /Canonicalization/ for the atom into other, more simpler atoms (whose canonicalizations we may already have access to), this is the fundamental approach with which CVXPY internally assembles complex mathematical programs, the so-called, /Disciplined convex programming/ [[https://web.stanford.edu/~boyd/papers/pdf/mcg_thesis.pdf][[1]​]] approach to problem construction.
+
+Hence, the first (and the most important) step to implementing the atom, is to find a 'correct' canonicalization for it, in this case, one may be found in: [[https://link.springer.com/article/10.1007/s10107-016-0998-2][[2]​]] (specifically, /proposition-4/ of the same). A nuance that we encountered in it's implementation was the fact that ~dcp2cone~ type canonicalization methods (namely, methods that reduce a /Disciplined Convex Programming/ problem to it's equivalent conic constraints), may only strictly return /conic/ constraints, i.e. there is no recursive canonicalization that is undertaken by CVXPY in order to reduce some otherwise non-conic atoms to their conic equivalents, and this needs to be explicitly done by calling their respective ~canon~ methods.
+
+The implementation of the function itself is couched in the ~numeric~ method of the parent structure of the class, and is simply the function: $S(\rho)=-\sum_{x}\lambda_{x}\log\lambda_{x}$ (may be read as the 'Shannon entropy of the spectrum of the operator/matrix').
+
+Now comes the (surprisingly) hard part --- writing test cases! In contrast to my last contribution to CVXPY, where I had plenty of verified programs to refer to from the literature, nothing of the sort existed for the Von Neumann entropy, and hence the struggle for constructing verifiable test cases starts!
+
+All in all, we ended up thinking of three distinct ways of constructing programs whose correctness could be otherwise verified. Each of them involves imposing a combination of constraints that make it 'easy' to 'see' the correct solution. I describe each of them below:
+1. Fix the 'first' $n-1$ eigenvectors and eigenvalues of the matrix to be optimized. There are now two points of immediate relevance that become available:
+   1. We can figure out the final, unspecified eigenvector (to within a sign change!) given the other $n-1$. An algorithm for doing the same is:
+      1. Generate a set of $n-1$ orthonormal vectors (to uniquely characterize the subspace that we will be projecting onto), do this by taking some matrix with linearly independent columns, and passing it through ~np.linalg.qr(.)~.
+      2. The next step would be to construct the projection matrix (for projecting onto the $n-1$ -dimensional subspace spanned by the above generated vectors). Can simply be done by stacking the above vectors column wise into a matrix $V$ and taking $V @ V.T$ (where $@$ represents matrix multiplication).
+      3. Subtract from $I_{(n,n)}$ to get the one dimensional projector, apply this to some randomly generated vector $\boldsymbol{x}\in\mathcal{R}^{n}$ to obtain the final eigenvector (scaled, will have to normalize)
+   2. The final eigenvalue may be computed by hand (given an additional constraint of the form $tr(X) < c$ (or $tr(X) > c$)) because of the form of the objective function (as indicated above). This can be seen by first observing the state of the objective function when one has access to $n-1$ eigenvalues, namely $\text{min}-\lambda_{n}\log\lambda_{n} + C_{1}$, where $C_{1}=\sum_{i=1}^{n-1}\lambda_{i}\log\lambda_{i}$, now if we say, know $tr(X) < C_{2}$ i.e. $\sum_{i}\lambda_{i} < C_{2}$, by leveraging the monotonicity of the Von-Neumann entropy before and after $1/e$, we can arrive at a closed form answer for the optimal value of the final eigenvalue (and since we have all unique eigenvectors in these generated examples, the optimal matrix as well).
+2. Moving on from eigenvalue constraints, we now turn our attention to [[https://www.cvxpy.org/examples/basic/sdp.html][SDP problems]]. Our first method of constructing programs involves no appeal to the construction of the dual of the SDP. It isn't hard to convince oneself of the equivalence of the following two CVXPY programs (in light of the above discussion):
+   #+begin_src python
+"""
+Program- 1
+"""
+X = cp.Variable(shape = (3,3), PSD = True)
+objective = cp.Minimize(-von_neumann_entr(X))
+cons1 = trace(A1 @ X) == b[0]
+cons2 = trace(A2 @ X) == b[1]
+cons3 = X - cp.diag(cp.diag(X)) == 0 # equivalent to 'diag=True'
+prob = cp.Problem(objective, [cons1, cons2, cons3])
+
+"""
+Program-2
+"""
+X = cp.Variable(shape = (3,3), diag = True)
+# following objective is equivalent to '-von_neumann_entr'
+# in the case of X \in diag(v)
+objective = cp.Minimize(-cp.sum(cp.entr(cp.diag(X))))
+cons1 = trace(A1 @ X) == b[0]
+cons2 = trace(A2 @ X) == b[1]
+cons3 = X >> 0
+prob = cp.Problem(objective, [cons1, cons2, cons3])
+   #+end_src
+   Hence, we note that, since /program-2/ is an equivalent construction to /program-1/ (but does not involve the ~von_neumann_entr(.)~ function in it's construction, i.e., is built off of elements whose correctness has already been verified), it may be used to verify the correctness of /program-1/!
+3. We again continue on with SDPs, this time, we want to construct test cases that leverage elements of the dual problem of the SDP --- in the case of convex programs, this means writing out the [[https://en.wikipedia.org/wiki/Karush%E2%80%93Kuhn%E2%80%93Tucker_conditions][KKT conditions]] for the primal problem. Our goal is to be able to construct as many valid SDPs as possible (notice that the form of the Von Neumann entropy fits well with that of the objective function of an SDP), to that end, all we have to do is write out the valid domains of the involved variables in the program, specify a subset of them, and ensure that the constraints that we computed on the rest are satisfied --- not just the $A_{i}$'s, $C$ and $X$, but also of how the values of these variables effect the feasibility of the dual problem. One can show that the dual problem to the standard SDP is:
+   \begin{equation*}
+    \begin{aligned}
+    & \underset{y\in\mathcal{R}^{m}}{\text{max}}
+    & & \langle b, y\rangle \\
+    & \text{subject to}
+    & & C=S+\underset{i\in[m]}{\sum}A_{i}y_{i}\\
+    & & & S \succeq 0
+    \end{aligned}
+   \end{equation*}
+   Writing the KKT conditions of the above problem involves writing out the so-called /Stationary Lagrangian/ and /Complementary slackness/ equations --- the former involves writing out the derivative of the objective function (in this case, the Von Neumann entropy), note that, in the SDP formulation, the matrix $C$ can be thought of as the derivative of the objective because of the matrix identity: $\nabla_{A}tr(AB)=B^{T}$, and further, one may derive the matrix derivative of the Von Neumann entropy AT some matrix $X$ using the methods of [[https://people.orie.cornell.edu/aslewis/publications/96-derivatives.pdf][[3]​]] to be $I_{(n,n)} + \text{logm}(X)$ (where $logm$ is the [[https://en.wikipedia.org/wiki/Logarithm_of_a_matrix][matrix logarithm]]).
+
+   The drawback with this approach is captured in the following theorem [[https://web.stanford.edu/~yyye/SDP-Rigidity.pdf][[4]​]]:
+   #+begin_center
+    /Let $X^{*}$ be a *max-rank* solution of an SDP and let $X^{*}=P^{T}P$, where $P\in\mathcal{R}^{r\times n}$. Then $X^{*}$ is the unique solution for the SDP if and only if the null space of the linear space spanned by $PA_{i}P^{T}, \quad i\in[m]$ is $\{0\}$/
+   #+end_center
+   Namely, an SDP won't always have a unique solution, and it is not very straightforward to verify whether it does or not.
+
+** References:
+[1]: Michael Charles Grant, 2004, /Disciplined Convex Programming/, PhD Dissertation\\
+[2]: V. Chandrasekaran and Parikshit Shah, 2016, /Relative entropy optimization and its applications/, Mathematical Programming *161*, 1-32, 2017\\
+[3]: A.S. Lewis, 1996, /Derivatives of Spectral Functions/, Mathematics of Operations Research, *21*\\
+[4]: Yinyu Ye, 2010, /Semidefinite Programming and Universal Rigidity/, Rigidity Microworkshop, Cornell, 2011\\

@@ -1,3 +1,4 @@
 #+title: Nice Papers
 
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
 1. [[https://arxiv.org/abs/1705.00812][Semidefinite approximations of the matrix logarithm]]: Find (an evolving) commentary on the paper [[file:blog.org::FSP,review][*HERE*]]

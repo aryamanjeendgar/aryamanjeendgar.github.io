@@ -3,11 +3,14 @@
 # #+HTML_CONTAINER: <script src="https://dohliam.github.io/dropin-minimal-css/switcher.js" type="text/javascript"></script>
 
 | [[about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
-* About:
+
+
 <<about>>
 
-#+attr_html: :style display:inline; max-width:35%;margin-left:auto;margin-right:auto
-[[file:./me.jpg]] Hi! I am Aryaman Jeendgar, a 3rd year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
+#+attr_html: :style float:left; max-width:25%;margin-left:auto;margin-right:auto;padding-right:10px;border-radius:50%
+[[file:./me.jpg]]
+
+Hi! I am Aryaman Jeendgar, a 3rd year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
 
 Broadly, I am interested in research problems with a mathematical flavor, and love writing code to serve solutions to such problems!
 
