@@ -26,22 +26,27 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="#orgd91fc38">About</a></td>
+<td class="org-left"><a href="#orgfb2e716">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left">CV</td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
 </tr>
 </tbody>
 </table>
-<div id="outline-container-orgad54c3d" class="outline-2">
-<h2 id="orgad54c3d">About:</h2>
-<div class="outline-text-2" id="text-orgad54c3d">
+
+
 <p>
-<a id="orgd91fc38"></a>
+<a id="orgfb2e716"></a>
 </p>
 
-<p style="display:inline; max-width:35%;margin-left:auto;margin-right:auto">
-<img src="./me.jpg" alt="me.jpg" style="display:inline; max-width:35%;margin-left:auto;margin-right:auto" /> Hi! I am Aryaman Jeendgar, a 3rd year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
+
+<div id="org07f514b" class="figure">
+<p><img src="./me.jpg" alt="me.jpg" style="float:left; max-width:25%;margin-left:auto;margin-right:auto;padding-right:10px;border-radius:50%" />
+</p>
+</div>
+
+<p>
+Hi! I am Aryaman Jeendgar, a 3rd year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
 </p>
 
 <p>
@@ -56,8 +61,6 @@ I will be spending this summer writing open source code for <a href="https://www
 <p>
 In the past, I have worked with <a href="https://www.bits-pilani.ac.in/goa/snehanshus/profile">Professor Snehanshu Saha</a> (BITS Goa) and <a href="https://www.wadhwaniai.org/team/soma-dhavala/">Mr. Soma S. Dhavala</a> (Wadhwani AI), a pre-print of our latest work can be found <a href="https://www.researchgate.net/publication/360464973_LogGENE_A_smooth_alternative_to_check_loss_for_Deep_Healthcare_Inference_Tasks"><b>HERE</b></a>.
 </p>
-</div>
-</div>
 </div>
 <div id="postamble" class="status">
 <p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 28.1 (<a href="https://orgmode.org">Org</a> mode 9.5.2)</p>
