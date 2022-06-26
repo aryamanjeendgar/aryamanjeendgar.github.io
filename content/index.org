@@ -20,4 +20,4 @@ I will be spending this summer writing open source code for [[https://www.cvxpy.
 
 In the past, I have worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] (BITS Goa) and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] (Wadhwani AI), a pre-print of our latest work can be found [[https://arxiv.org/abs/2206.09333][*HERE*]]
 
-#+HTML: <br><footer>HELLO WORLD</footer>
+#+HTML: <br><footer><url>https://www.linkedin.com/in/aryaman-jeendgar-63a012210/</url><br><url>https://github.com/aryamanjeendgar</url></footer>
