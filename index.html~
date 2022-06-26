@@ -26,7 +26,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="#orgfb2e716">About</a></td>
+<td class="org-left"><a href="#orgab96ade">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left">CV</td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
@@ -36,11 +36,11 @@
 
 
 <p>
-<a id="orgfb2e716"></a>
+<a id="orgab96ade"></a>
 </p>
 
 
-<div id="org07f514b" class="figure">
+<div id="orgfc295d1" class="figure">
 <p><img src="./me.jpg" alt="me.jpg" style="float:left; max-width:25%;margin-left:auto;margin-right:auto;padding-right:10px;border-radius:50%" />
 </p>
 </div>
@@ -55,12 +55,14 @@ Broadly, I am interested in research problems with a mathematical flavor, and lo
 
 
 <p>
-I will be spending this summer writing open source code for <a href="https://www.cvxpy.org/">CVXPY</a>, under the <a href="https://summerofcode.withgoogle.com/">GSoC-2022</a> program and interning at Intel Labs in the <i>Emerging Visual/AI Systems (EVS)</i> Research group!
+I will be spending this summer writing open source code for <a href="https://www.cvxpy.org/">CVXPY</a>, under the <a href="https://summerofcode.withgoogle.com/">GSoC-2022</a> program and interning at Intel Labs in the <i>Cloud Systems</i> Research group!
 </p>
 
 <p>
-In the past, I have worked with <a href="https://www.bits-pilani.ac.in/goa/snehanshus/profile">Professor Snehanshu Saha</a> (BITS Goa) and <a href="https://www.wadhwaniai.org/team/soma-dhavala/">Mr. Soma S. Dhavala</a> (Wadhwani AI), a pre-print of our latest work can be found <a href="https://www.researchgate.net/publication/360464973_LogGENE_A_smooth_alternative_to_check_loss_for_Deep_Healthcare_Inference_Tasks"><b>HERE</b></a>.
+In the past, I have worked with <a href="https://www.bits-pilani.ac.in/goa/snehanshus/profile">Professor Snehanshu Saha</a> (BITS Goa) and <a href="https://www.wadhwaniai.org/team/soma-dhavala/">Mr. Soma S. Dhavala</a> (Wadhwani AI), a pre-print of our latest work can be found <a href="https://arxiv.org/abs/2206.09333"><b>HERE</b></a>
 </p>
+
+<br><footer>HELLO WORLD</footer>
 </div>
 <div id="postamble" class="status">
 <p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 28.1 (<a href="https://orgmode.org">Org</a> mode 9.5.2)</p>
