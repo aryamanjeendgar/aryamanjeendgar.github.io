@@ -26,7 +26,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="#orgab96ade">About</a></td>
+<td class="org-left"><a href="#org599dbc6">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left">CV</td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
@@ -36,11 +36,11 @@
 
 
 <p>
-<a id="orgab96ade"></a>
+<a id="org599dbc6"></a>
 </p>
 
 
-<div id="orgfc295d1" class="figure">
+<div id="org8173be1" class="figure">
 <p><img src="./me.jpg" alt="me.jpg" style="float:left; max-width:25%;margin-left:auto;margin-right:auto;padding-right:10px;border-radius:50%" />
 </p>
 </div>
@@ -62,7 +62,7 @@ I will be spending this summer writing open source code for <a href="https://www
 In the past, I have worked with <a href="https://www.bits-pilani.ac.in/goa/snehanshus/profile">Professor Snehanshu Saha</a> (BITS Goa) and <a href="https://www.wadhwaniai.org/team/soma-dhavala/">Mr. Soma S. Dhavala</a> (Wadhwani AI), a pre-print of our latest work can be found <a href="https://arxiv.org/abs/2206.09333"><b>HERE</b></a>
 </p>
 
-<br><footer>HELLO WORLD</footer>
+<br><footer><a href="https://www.linkedin.com/in/aryaman-jeendgar-63a012210/">LinkedIn</a><br><a href="https://github.com/aryamanjeendgar">GitHub</a></footer>
 </div>
 <div id="postamble" class="status">
 <p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 28.1 (<a href="https://orgmode.org">Org</a> mode 9.5.2)</p>
