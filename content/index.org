@@ -2,6 +2,7 @@
 #+options: toc:nil
 # #+HTML_CONTAINER: <script src="https://dohliam.github.io/dropin-minimal-css/switcher.js" type="text/javascript"></script>
 
+
 | [[about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
 
 
@@ -15,6 +16,8 @@ Hi! I am Aryaman Jeendgar, a 3rd year undergrad from BITS Pilani, Hyderabad Camp
 Broadly, I am interested in research problems with a mathematical flavor, and love writing code to serve solutions to such problems!
 
 
-I will be spending this summer writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Emerging Visual/AI Systems (EVS)/ Research group!
+I will be spending this summer writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Cloud Systems/ Research group!
 
-In the past, I have worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] (BITS Goa) and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] (Wadhwani AI), a pre-print of our latest work can be found [[https://www.researchgate.net/publication/360464973_LogGENE_A_smooth_alternative_to_check_loss_for_Deep_Healthcare_Inference_Tasks][*HERE*]].
+In the past, I have worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] (BITS Goa) and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] (Wadhwani AI), a pre-print of our latest work can be found [[https://arxiv.org/abs/2206.09333][*HERE*]]
+
+#+HTML: <br><footer>HELLO WORLD</footer>
