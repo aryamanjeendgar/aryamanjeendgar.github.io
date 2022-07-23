@@ -5,13 +5,15 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Blog</title>
+<title>CV</title>
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" href="https://latex.now.sh/style.css" />
 </head>
 <body>
 <div id="content" class="content">
-<h1 class="title">Blog</h1>
+<h1 class="title">CV</h1>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8WKV7DQ4BV"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-8WKV7DQ4BV');</script>
+
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 
 
@@ -34,10 +36,10 @@
 </tbody>
 </table>
 
-<ol class="org-ol">
-<li><i>Semidefinite approximations of the matrix logarithm</i>, a commentary:<a id="orgba9eb59"></a></li>
-<li><a href="VN entropy.html">Implementing the Von Neumann entropy in CVXPY:</a></li>
-</ol>
+<p>
+<a href="AryamanJeendgar_resume.pdf">AryamanJeendgar_resume.pdf</a>
+<img src="./cv.png" alt="cv.png" />
+</p>
 </div>
 <div id="postamble" class="status">
 <p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 28.1 (<a href="https://orgmode.org">Org</a> mode 9.5.2)</p>
