@@ -12,6 +12,9 @@
 <body>
 <div id="content" class="content">
 <h1 class="title">Aryaman Jeendgar</h1>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8WKV7DQ4BV"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-8WKV7DQ4BV');</script>
+
+
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 
 
@@ -26,21 +29,20 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="#orgeb64c58">About</a></td>
+<td class="org-left"><a href="index.html#orgbac9cba">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
-<td class="org-left">CV</td>
+<td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
 </tr>
 </tbody>
 </table>
 
-
 <p>
-<a id="orgeb64c58"></a>
+<a id="orgbac9cba"></a>
 </p>
 
 
-<div id="org49cfe2f" class="figure">
+<div id="org5f43ff7" class="figure">
 <p><img src="./me.jpg" alt="me.jpg" style="float:left; max-width:25%;margin-left:auto;margin-right:auto;padding-right:10px;border-radius:50%" />
 </p>
 </div>
@@ -55,12 +57,14 @@ Broadly, I am interested in research problems with a mathematical flavor, and lo
 
 
 <p>
-I will be spending this summer writing open source code for <a href="https://www.cvxpy.org/">CVXPY</a>, under the <a href="https://summerofcode.withgoogle.com/">GSoC-2022</a> program and interning at Intel Labs in the <i>Emerging Visual/AI Systems (EVS)</i> Research group!
+I will be spending this summer writing open source code for <a href="https://www.cvxpy.org/">CVXPY</a>, under the <a href="https://summerofcode.withgoogle.com/">GSoC-2022</a> program and interning at Intel Labs in the <i>Cloud Systems</i> Research group!
 </p>
 
 <p>
-In the past, I have worked with <a href="https://www.bits-pilani.ac.in/goa/snehanshus/profile">Professor Snehanshu Saha</a> (BITS Goa) and <a href="https://www.wadhwaniai.org/team/soma-dhavala/">Mr. Soma S. Dhavala</a> (Wadhwani AI), a pre-print of our latest work can be found <a href="https://www.researchgate.net/publication/360464973_LogGENE_A_smooth_alternative_to_check_loss_for_Deep_Healthcare_Inference_Tasks"><b>HERE</b></a>.
+In the past, I have worked with <a href="https://www.bits-pilani.ac.in/goa/snehanshus/profile">Professor Snehanshu Saha</a> (BITS Goa) and <a href="https://www.wadhwaniai.org/team/soma-dhavala/">Mr. Soma S. Dhavala</a> (Wadhwani AI), a pre-print of our latest work can be found <a href="https://arxiv.org/abs/2206.09333"><b>HERE</b></a>
 </p>
+
+<br><footer><a href="https://www.linkedin.com/in/aryaman-jeendgar-63a012210/">LinkedIn</a><br><a href="https://github.com/aryamanjeendgar">GitHub</a></footer>
 </div>
 <div id="postamble" class="status">
 <p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 28.1 (<a href="https://orgmode.org">Org</a> mode 9.5.2)</p>

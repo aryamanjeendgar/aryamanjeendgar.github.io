@@ -1,6 +1,6 @@
 #+title: Nice Papers
 
-| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
 
 1. [[https://arxiv.org/abs/1705.00812][Semidefinite approximations of the matrix logarithm]]: Find (an evolving) commentary on the paper [[file:blog.org::FSP,review][*HERE*]]
 2. [[https://arxiv.org/abs/1710.10044][Distributional Reinforcement Learning with Quantile Regression]] --- for a comprehensive introduction to distributional RL see [[https://www.distributional-rl.org/][HERE]]

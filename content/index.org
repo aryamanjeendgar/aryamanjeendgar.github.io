@@ -4,8 +4,7 @@
 #+HTML:<script async src="https://www.googletagmanager.com/gtag/js?id=G-8WKV7DQ4BV"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-8WKV7DQ4BV');</script>
 
 
-| [[about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
-
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
 
 <<about>>
 

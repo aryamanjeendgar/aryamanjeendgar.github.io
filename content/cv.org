@@ -1,0 +1,15 @@
+#+title: CV
+#+HTML:<script async src="https://www.googletagmanager.com/gtag/js?id=G-8WKV7DQ4BV"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-8WKV7DQ4BV');</script>
+
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
+
+[[file:AryamanJeendgar_resume.pdf]]
+[[file:./cv.png]]
+
+#+begin_export latex
+\begin{figure}[h!]
+    %\\includegraphics{./AryamanJeendgar_resume.pdf}
+    includegraphics{./cv.png}
+    \caption{Early 2022 resume}
+\end{figure}
+#+end_export

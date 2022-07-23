@@ -26,16 +26,16 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="index.html#orgeb64c58">About</a></td>
+<td class="org-left"><a href="index.html#orgbac9cba">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
-<td class="org-left">CV</td>
+<td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
 </tr>
 </tbody>
 </table>
 
 <ol class="org-ol">
-<li><i>Semidefinite approximations of the matrix logarithm</i>, a commentary:<a id="org47cda7d"></a></li>
+<li><i>Semidefinite approximations of the matrix logarithm</i>, a commentary:<a id="org5d16c92"></a></li>
 <li><a href="VN entropy.html">Implementing the Von Neumann entropy in CVXPY:</a></li>
 </ol>
 </div>

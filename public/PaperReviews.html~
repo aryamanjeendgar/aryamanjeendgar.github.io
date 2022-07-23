@@ -12,8 +12,39 @@
 <body>
 <div id="content" class="content">
 <h1 class="title">Nice Papers</h1>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"><a href="index.html#orgbac9cba">About</a></td>
+<td class="org-left"><a href="blog.html">Blog</a></td>
+<td class="org-left"><a href="cv.html">CV</a></td>
+<td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
+</tr>
+</tbody>
+</table>
+
 <ol class="org-ol">
-<li><a href="https://arxiv.org/abs/1705.00812">Semidefinite approximations of the matrix logarithm</a>: Find (an evolving) commentary on the paper <a href="blog.html#org47cda7d"><b>HERE</b></a></li>
+<li><a href="https://arxiv.org/abs/1705.00812">Semidefinite approximations of the matrix logarithm</a>: Find (an evolving) commentary on the paper <a href="blog.html#org5d16c92"><b>HERE</b></a></li>
+<li><a href="https://arxiv.org/abs/1710.10044">Distributional Reinforcement Learning with Quantile Regression</a> &#x2014; for a comprehensive introduction to distributional RL see <a href="https://www.distributional-rl.org/">HERE</a></li>
+<li><a href="https://arxiv.org/abs/2106.11565">Practical Near Neighbour Search via Group testing</a> &#x2014; really cool work that uses the notion of <a href="https://www.eecs.harvard.edu/~michaelm/postscripts/alenex2006.pdf">Distance Sensitive Bloom Filters</a> coupled with ideas from <a href="https://arxiv.org/abs/1902.06002">Group Testing</a> to devise a really efficient framework for the approximate nearest neighbor search problem (they outperform FAISS by multiple factors!)</li>
+<li>Numerical Linear Algebra, <i>Lloyd N. Trefethen and David Bau III</i>: Need to iron out my understanding of NLA, and this classical text is the best there is for a (relatively) self-contained course! Can then graduate to using <i>Matrix Computations</i> as a reference for all my LA needs like every sane applied mathematician XD.</li>
+<li><a href="https://arxiv.org/abs/1909.05207?context=cs.LG">Introduction to Online Convex Optimization</a>: Elad Hazan's text on OCO. Online learning is really cool, and I wanna learn about it!</li>
+<li><a href="https://web.stanford.edu/~boyd/cvxbook/">Boyd's Convex Optimization</a>: Plan on reading the first theory part from the text, review some of the fundamental background.</li>
+<li><a href="https://arxiv.org/abs/1405.4980">Convex Optimization: Algorithms and Complexity</a>: A beautiful monograph on the algorithmics of Convex optimization, plan on reading in conjunction with Boyd's theory portion.</li>
+<li><a href="https://arxiv.org/abs/1712.07897">Non-Convex optimization for Machine Learning</a>: Prateek Jain's monograph on some broad ideas in non-convex optimization, really exciting stuff!</li>
+<li><a href="https://docs.google.com/viewer?url=https://raw.githubusercontent.com/tengyuma/cs229m_notes/main/master.pdf">Tengyu Ma's StatML notes</a>: Already have some background in learning theory from Shai's excellent text &#x2014; plan to use Ma's notes as a reference while going through the above stuff, his notes also have some material on NTK ideas!</li>
+<li>A User's guide to Measure Theoretic Probability Theory, <i>David Pollard</i>: An amazing text giving a self-contained tour of MTPT (ought to probably be sufficient for wannabe applied mathematician like me XD).</li>
 </ol>
 </div>
 <div id="postamble" class="status">
