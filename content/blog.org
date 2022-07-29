@@ -4,3 +4,4 @@
 
 1. /Semidefinite approximations of the matrix logarithm/, a commentary:<<FSP,review>>
 2. [[file:VN entropy.org][Implementing the Von Neumann entropy in CVXPY:]]
+3. [[file:Scalar Relative Entropy.org][Implementing the Scalar Relative Entropy Cone in CVXPY:]]

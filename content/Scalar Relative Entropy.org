@@ -1,0 +1,21 @@
+#+title: Scalar Relative Entropy
+# #+LATEX_HEADER: \usepackage{amsthm}\newtheorem{definition}{Definition}
+#+ATTR_LATEX: :environment definition
+
+
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
+* Implementing the Scalar Relative Entropy Cone in CVXPY:
+<2022-07-29 Fri>\\
+/This article is second in a series of posts whose intent is to document my contributions to CVXPy's codebase during my time as part of the GSoC '22 programme/
+
+In this post I want to talk about [[https://github.com/cvxpy/cvxpy/pull/1833][my PR]] for adding support for the /Scalar Relative Entropy Cone/ (henceforth referred to as the *sREC*) within CVXPy.
+
+First off, /what is/ the sREC. It is a convex cone that is incredibly similar in how it's defined to the classical /exponential cone/, here are the definitions of both for comparisons sake:
+#+begin_theorem
+  The exponential cone is a convex subset of $\mathbb{R}^3$ defined as:\\
+  $K_{\text{exp}}=\{(x_1, x_2, x_3): x_1\geq x_2 e^{x_3/x_{2}}, x_2>0\}\cup\{(x_1,0,  x_3): x_1\geq0, x_3\leq 0\}$
+#+end_theorem
+#+begin_theorem
+  The *sREC* is a convex subset of $\mathbb{R}^3$ defined as:\\
+  $K_{\text{re}}=\{(x,y,\tau)\in\mathbb{R}_{+ + }\times\mathbb{R}_{ ++}\times\mathbb{R}: x\log(x/y)\leq\tau\}$
+#+end_theorem

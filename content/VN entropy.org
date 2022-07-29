@@ -1,6 +1,6 @@
 #+title: VN Entropy
 
-| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | CV | [[file:PaperReviews.org][Papers to Read]] |
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
 * Implementing the Von Neumann Entropy in CVXPY:
 <2022-06-06 Mon>\\
 In this post I want to talk about [[https://github.com/cvxpy/cvxpy/pull/1789][my PR]] for appending support for the [[https://en.wikipedia.org/wiki/Von_Neumann_entropy][Von Neumann Entropy]] as an atom in [[https://www.cvxpy.org/][CVXPY]].

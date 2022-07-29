@@ -26,7 +26,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="index.html#orgbac9cba">About</a></td>
+<td class="org-left"><a href="index.html#orgc71cfe7">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
@@ -35,7 +35,7 @@
 </table>
 
 <ol class="org-ol">
-<li><a href="https://arxiv.org/abs/1705.00812">Semidefinite approximations of the matrix logarithm</a>: Find (an evolving) commentary on the paper <a href="blog.html#org5d16c92"><b>HERE</b></a></li>
+<li><a href="https://arxiv.org/abs/1705.00812">Semidefinite approximations of the matrix logarithm</a>: Find (an evolving) commentary on the paper <a href="blog.html#org4d172e0"><b>HERE</b></a></li>
 <li><a href="https://arxiv.org/abs/1710.10044">Distributional Reinforcement Learning with Quantile Regression</a> &#x2014; for a comprehensive introduction to distributional RL see <a href="https://www.distributional-rl.org/">HERE</a></li>
 <li><a href="https://arxiv.org/abs/2106.11565">Practical Near Neighbour Search via Group testing</a> &#x2014; really cool work that uses the notion of <a href="https://www.eecs.harvard.edu/~michaelm/postscripts/alenex2006.pdf">Distance Sensitive Bloom Filters</a> coupled with ideas from <a href="https://arxiv.org/abs/1902.06002">Group Testing</a> to devise a really efficient framework for the approximate nearest neighbor search problem (they outperform FAISS by multiple factors!)</li>
 <li>Numerical Linear Algebra, <i>Lloyd N. Trefethen and David Bau III</i>: Need to iron out my understanding of NLA, and this classical text is the best there is for a (relatively) self-contained course! Can then graduate to using <i>Matrix Computations</i> as a reference for all my LA needs like every sane applied mathematician XD.</li>
