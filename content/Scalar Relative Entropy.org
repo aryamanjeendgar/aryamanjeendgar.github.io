@@ -11,11 +11,119 @@
 In this post I want to talk about [[https://github.com/cvxpy/cvxpy/pull/1833][my PR]] for adding support for the /Scalar Relative Entropy Cone/ (henceforth referred to as the *sREC*) within CVXPy.
 
 First off, /what is/ the sREC. It is a convex cone that is incredibly similar in how it's defined to the classical /exponential cone/, here are the definitions of both for comparisons sake:
-#+begin_theorem
+#+begin_definition
   The exponential cone is a convex subset of $\mathbb{R}^3$ defined as:\\
   $K_{\text{exp}}=\{(x_1, x_2, x_3): x_1\geq x_2 e^{x_3/x_{2}}, x_2>0\}\cup\{(x_1,0,  x_3): x_1\geq0, x_3\leq 0\}$
-#+end_theorem
-#+begin_theorem
+#+end_definition
+#+begin_definition
   The *sREC* is a convex subset of $\mathbb{R}^3$ defined as:\\
   $K_{\text{re}}=\{(x,y,\tau)\in\mathbb{R}_{+ + }\times\mathbb{R}_{ ++}\times\mathbb{R}: x\log(x/y)\leq\tau\}$
+#+end_definition
+
+If you squint hard enough, you can see that the relationship between the two is pretty simple, and is just a permutation of the arguments and a sign change, specifically: For $(x_1,x_2,x_3)\in K_{exp} \implies (x_2, x_3, -x_1)\in K_{re}$ --- this is precisely what has been implemented in the function ~as_expconequad(m, k)~ under the ~ExpCone~ class, and is the function that provides the primary interface for working with this newly implemented "approximation" method to the exponential cone.
+
+Now, naturally, the next thing to discuss is the nature of the approximation itself, for those who would prefer to read up on the details on their own, the contents of the ~ExpConeQuad~ pretty much are a careful adaption of *Theorem-3* from [[https://arxiv.org/abs/1705.00812][[1]​]] to suit the currently offered functionality in CVXPY.
+
+But, to put it very simply, the main result of [[https://arxiv.org/abs/1705.00812][[1]​]] constructs a semidefinite approximation to the so-called /Operator Relative Entropy Cone/ (which is the matrix generalization of the *sREC*). It does this by carefully constructing an approximation to the logarithm by using it's integral representation (namely: $\log(x)=\int_0^1\frac{x-1}{t(x-1)+1}dt$), which is in turn approximated by using a quadrature method (in this case, it is the [[https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_quadrature#:~:text=In%20numerical%20analysis%2C%20Gauss%E2%80%93Legendre,the%20rule%20takes%20the%20form%3A&text=xi%20are%20the%20roots%20of%20the%20nth%20Legendre%20polynomial.][Gauss-Legendre quadrature]]), hence, we write: $\log(x)\approx r_m(x):=\sum_{j=1}^m w_j\frac{x-1}{t_j(x-1)+1}$ --- this approximation is powerful becuase $r_m$ is concave and /semidefinite representable/! Hence, using this function the *sREC* may be re-written as:
+#+begin_definition
+The $(m,k)$ -approximation to the *sREC* is the following cone:\\
+$K_{m,k}:=\{(x,y,t)\in\mathbb{R}^2_{+ + }\times\mathbb{R}: x r_m(x/y)\leq t\}$
+#+end_definition
+
+
+I reproduce the actual semidefinite representation from the paper below:
+#+begin_theorem
+$K_{m,k}$ has the following semidefinite representation:\\
+$(x,y,t)\in K_{m,k}$ \\
+$\Updownarrow$
+$\exists\quad T_1,\dots,T_m,Z_0,\dots,Z_k\in\mathbb{R}\quad\text{s.t.}\begin{cases}&Z_0=y, \qquad &\begin{bmatrix}Z_i & Z_{i+1}\\Z_{i+1} & x\end{bmatrix}\succeq 0 (i=0,\dots,k-1)\\&\sum_{j=1}^m w_j T_j=-2^{-k}T, \qquad &\begin{bmatrix}Z_k-x-T_j & -\sqrt{t_j}T_j\\-\sqrt{t_j}T_j & x-t_jT_j\end{bmatrix}\succeq 0(j=1,\dots,m)\end{cases}$
 #+end_theorem
+
+Now, the interesting thing to note is that, since these are just $2\times 2$ SDP constraints, they can be re-formulated as *[[https://docs.mosek.com/modeling-cookbook/cqo.html][SOC]]* (Second-Order-Cone), specifically, as a rotated-second-order cone constraints because: $\begin{bmatrix}x & y\\y & z\end{bmatrix}\succeq 0 \Leftrightarrow x\geq 0, z\geq 0, xz \geq y^2$, the last of which is basically the rotated SOC constraint!
+
+Now, to that end, there existed the ~quad_over_lin(X, y)~ atom in CVXPY, which computes: $\sum_{i,j} X^2_{ij}/y$, whose epigraph ~quad_over_lin(X, y)~ $\leq t$ is basically what we want (i.e. the rotated SOC), which we then used, and saw work pretty well! The only issue though was, that the atom was not /vectorized/ for vector inputs $\boldsymbol{y}$.
+
+** Implementing the Gauss-Legendre quadrature:
+A quadrature algorithm is basically anything that will spit out a set of /nodes/ and /weights/ (corresponding to each node) over which the function will simply be evaluated and then summed over (with each evaluation being scaled by the appropriate weight). The Gauss-Legendre quadrature in specific, admits a very rich and interesting formulation in terms of the [[https://en.wikipedia.org/wiki/Legendre_polynomials][/Legendre Polynomials/]], namely, the nodes of the G-L quadrature are nothing but the roots of the Legendre polynomials! Now comes the question of how does one generate these roots of the polynomials --- as it turns out, there is a very special passage that exists, starting all the way from the [[https://en.wikipedia.org/wiki/Arnoldi_iteration][/Arnoldi iteration/]] which gets specialised to the [[https://en.wikipedia.org/wiki/Lanczos_algorithm][/Lanczos Algorithm/]] (by restricting the input matrix $\boldsymbol{A}$ to be /symmetric/) whose adaption to the continuous regime (i.e. /functions/ $\leftrightarrow$ /vectors/ and /operators/ $\leftrightarrow$ /matrices/) yields us the required nodes.
+
+Namely, we obtain the following recurrence (whose elements are to be subsequently used to construct the /Jacobi matrix/ defined below):
+\[
+\alpha_n=0, \qquad\beta_n=\frac{1}{2}(1-(2n)^{-2})^{-1/2}
+\]
+Which in leads us to the following definition:
+#+begin_definition
+The /Jacobi matrix/ can be constructed from the above above set of recurrence coefficients $\{\alpha_n\}$ and $\{\beta_n\}$ as:\\
+\[
+T_n=\begin{bmatrix}\alpha_1 & \beta_1 & 0 & \cdots & 0\\\beta_1 & \alpha_2 & \beta_2 & 0 & \cdots & 0\\0 & \beta_2 & \alpha_3 & \ddots & \cdots & 0\\0 & 0 & \ddots & \ddots & \ddots & \beta_{n-1}\\0 & 0 & 0 & \cdots & \beta_{n-1} & \alpha_n\end{bmatrix}
+\]
+#+end_definition
+
+With this, we have the following theorem:
+#+begin_theorem
+With $T_n$ being the $n\times n$ Jacobi matrix, let $T_n=VDV^T$ be an orthogonal diagonalization of $V$ with $V=[v_1|v_2|\cdots|v_n]$ and $D=\text{diag}(\lambda_1, \cdots, \lambda_n)$. Then the nodes of the Gauss-Legendre quadrature formula are given by:
+\[
+x_j=\lambda_j, \qquad w_j=2(v_j)_1^2, \qquad j=1,\cdots,n
+\]
+#+end_theorem
+
+This entire elegant mathematical structure can be captured in just a few lines of code, as shown below:
+#+begin_src python
+def gauss_legendre(n):
+    """
+    Helper function for returning the weights and nodes for an
+    n-point Gauss-Legendre quadrature on [0, 1]
+    """
+    beta = 0.5/np.sqrt(np.ones(n-1)-(2*np.arange(1, n, dtype=float))**(-2))
+    T = np.diag(beta, 1) + np.diag(beta, -1)
+    D, V = np.linalg.eigh(T)
+    x = D
+    x, i = np.sort(x), np.argsort(x)
+    w = 2 * (np.array([V[0][k] for k in i]))**2
+    x = (x + 1)/2
+    w = w/2
+    return w, x
+#+end_src
+
+** Vectorizing ~quad_over_lin( ., .)~:
+Vectorizing the input over ~y~ turned out to be somewhat of an involved process. For starters, we opted to move away from using ~quad_over_lin~ out of the box, and chose to write our own function for constraining a set of variables to the rotated SOC, here is the code for the same:
+#+begin_src python
+def rotated_quad_cone(X: cp.Expression, y: cp.Expression, z: cp.Expression):
+    """
+    For each i, enforce a constraint that
+        (X[i, :], y[i], z[i])
+    belongs to the rotated quadratic cone
+        { (x, y, z) : || x ||^2 <= y z, 0 <= (y, z) }
+    This implementation doesn't enforce (x, y) >= 0! That should be imposed by the calling function.
+    """
+    m = y.size
+    assert z.size == m
+    assert X.shape[0] == m
+    if len(X.shape) < 2:
+        X = cp.reshape(X, (m, 1))
+    #####################################
+    # Comments from quad_over_lin_canon:
+    #   quad_over_lin := sum_{i} x^2_{i} / y
+    #   t = Variable(1,) is the epigraph variable.
+    #   Becomes a constraint
+    #   SOC(t=y + t, X=[y - t, 2*x])
+    ####################################
+    soc_X_col0 = cp.reshape(y - z, (m, 1))
+    soc_X = cp.hstack((soc_X_col0, 2*X))
+    soc_t = y + z
+    con = cp.SOC(t=soc_t, X=soc_X, axis=1)
+    return con
+#+end_src
+
+The above function hinges on two central ideas:
+1. If $(y, t, 2x)\in rSOC \Leftrightarrow (y+t, y-t, 2x)\in SOC$
+2. The way the SOC constraint is vectorized in CVXPy is as:
+   #+begin_quote
+    Assumes ``t`` is a vector the same length as ``X``'s columns (rows) for
+    ``axis == 0`` (``1``).
+   #+end_quote
+   i.e. every row of ~X~ corresponds to every entry of ~t~ for the constraint --- the rest follows naturally.
+
+** References:
+[[https://arxiv.org/pdf/1705.00812.pdf][[1]: Hamza Fawzi, J. Saunderson and Pablo A. Parrilo, /Semidefinite approximations of the matrix logarithm/]]\\
+[[https://www.math.stonybrook.edu/~bishop/classes/math331.F17/Projects/GaussVsCC.pdf][[2]: Lloyd N. Trefethen. /Is Gauss quadrature better than Clenshaw-Curtis?/ SIAM Review, 2008]]\\
+[3]: Lloyd N. Trefethen, David Bau III, /Numerical Linear Algebra/, SIAM, 1997
