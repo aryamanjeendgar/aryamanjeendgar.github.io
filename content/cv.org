@@ -3,8 +3,8 @@
 
 | [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
 
-[[file:AryamanJeendgar_resume.pdf]]
-[[file:./cv.png]]
+*/Click on the image below to download the PDF/*
+[[file:AryamanJeendgar_resume.pdf][file:./cv.png]]
 
 #+begin_export latex
 \begin{figure}[h!]

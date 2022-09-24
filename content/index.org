@@ -11,13 +11,13 @@
 #+attr_html: :style float:left; max-width:25%;margin-left:auto;margin-right:auto;padding-right:10px;border-radius:50%
 [[file:./me.jpg]]
 
-Hi! I am Aryaman Jeendgar, a 3rd year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
+Hi! I am Aryaman Jeendgar, a 4th year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
 
 Broadly, I am interested in research problems with a mathematical flavor, and love writing code to serve solutions to such problems!
 
 
-I will be spending this summer writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Cloud Systems/ Research group!
+I spent the summer of /'22/ writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Cloud Systems/ Research group!
 
-In the past, I have worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] (BITS Goa) and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] (Wadhwani AI), a pre-print of our latest work can be found [[https://arxiv.org/abs/2206.09333][*HERE*]]
+In the past, I have worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] /(BITS Goa)/ and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] /(Wadhwani AI)/, a pre-print of our latest work can be found [[https://arxiv.org/abs/2206.09333][*HERE*]]
 
 #+HTML: <br><footer><a href="https://www.linkedin.com/in/aryaman-jeendgar-63a012210/">LinkedIn</a><br><a href="https://github.com/aryamanjeendgar">GitHub</a></footer>
