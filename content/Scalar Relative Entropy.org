@@ -4,13 +4,13 @@
 
 
 | [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
-* Implementing the Scalar Relative Entropy Cone in CVXPY:
+* Implementing the (Approximate) Scalar Relative Entropy Cone in CVXPY:
 <2022-07-29 Fri>\\
 /This article is second in a series of posts whose intent is to document my contributions to CVXPy's codebase during my time as part of the GSoC '22 programme/
 
-In this post I want to talk about [[https://github.com/cvxpy/cvxpy/pull/1833][my PR]] for adding support for the /Scalar Relative Entropy Cone/ (henceforth referred to as the *sREC*) within CVXPy.
+In this post I want to talk about [[https://github.com/cvxpy/cvxpy/pull/1833][my PR]] for adding support for an alternate, /approximate/ canonicalization for the /Exponential Cone/, under the guise of the so-called, /Scalar-Relative entropy cone/ (henceforth referred to as the *sREC*) within CVXPy.
 
-First off, /what is/ the sREC. It is a convex cone that is incredibly similar in how it's defined to the classical /exponential cone/, here are the definitions of both for comparisons sake:
+So first off, /what is/, the sREC. It is a convex cone that is incredibly similar in how it's defined to the classical /exponential cone/, here are the definitions of both for comparisons sake:
 #+begin_definition
   The exponential cone is a convex subset of $\mathbb{R}^3$ defined as:\\
   $K_{\text{exp}}=\{(x_1, x_2, x_3): x_1\geq x_2 e^{x_3/x_{2}}, x_2>0\}\cup\{(x_1,0,  x_3): x_1\geq0, x_3\leq 0\}$
@@ -24,18 +24,20 @@ If you squint hard enough, you can see that the relationship between the two is 
 
 Now, naturally, the next thing to discuss is the nature of the approximation itself, for those who would prefer to read up on the details on their own, the contents of the ~ExpConeQuad~ pretty much are a careful adaption of *Theorem-3* from [[https://arxiv.org/abs/1705.00812][[1]​]] to suit the currently offered functionality in CVXPY.
 
-But, to put it very simply, the main result of [[https://arxiv.org/abs/1705.00812][[1]​]] constructs a semidefinite approximation to the so-called /Operator Relative Entropy Cone/ (which is the matrix generalization of the *sREC*). It does this by carefully constructing an approximation to the logarithm by using it's integral representation (namely: $\log(x)=\int_0^1\frac{x-1}{t(x-1)+1}dt$), which is in turn approximated by using a quadrature method (in this case, it is the [[https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_quadrature#:~:text=In%20numerical%20analysis%2C%20Gauss%E2%80%93Legendre,the%20rule%20takes%20the%20form%3A&text=xi%20are%20the%20roots%20of%20the%20nth%20Legendre%20polynomial.][Gauss-Legendre quadrature]]), hence, we write: $\log(x)\approx r_m(x):=\sum_{j=1}^m w_j\frac{x-1}{t_j(x-1)+1}$ --- this approximation is powerful becuase $r_m$ is concave and /semidefinite representable/! Hence, using this function the *sREC* may be re-written as:
+But, to put it very simply, the main result of [[https://arxiv.org/abs/1705.00812][[1]​]] constructs a semidefinite approximation to the so-called /Operator Relative Entropy Cone/ (which is the matrix generalization of the *sREC*). It does this by carefully constructing an approximation to the logarithm by using it's integral representation (namely: $\log(x)=\int_0^1\frac{x-1}{t(x-1)+1}dt$), which is in turn approximated by using a quadrature method (in this case, it is the [[https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_quadrature#:~:text=In%20numerical%20analysis%2C%20Gauss%E2%80%93Legendre,the%20rule%20takes%20the%20form%3A&text=xi%20are%20the%20roots%20of%20the%20nth%20Legendre%20polynomial.][Gauss-Legendre quadrature]]), hence, we write: $\log(x)\approx r_m(x):=\sum_{j=1}^m w_j\frac{x-1}{t_j(x-1)+1}$ --- this approximation is powerful because $r_m$ is concave and /semidefinite representable/! Hence, using this function the *sREC* may be re-written as:
 #+begin_definition
 The $(m,k)$ -approximation to the *sREC* is the following cone:\\
 $K_{m,k}:=\{(x,y,t)\in\mathbb{R}^2_{+ + }\times\mathbb{R}: x r_m(x/y)\leq t\}$
 #+end_definition
 
+I reproduce the actual semidefinite representation for the above defined $K_{m,k}$ from the paper, below:
 
-I reproduce the actual semidefinite representation from the paper below:
 #+begin_theorem
 $K_{m,k}$ has the following semidefinite representation:\\
-$(x,y,t)\in K_{m,k}$ \\
-$\Updownarrow$
+\[
+(x,y,t)\in K_{m,k} \\
+\Updownarrow \\
+\]
 $\exists\quad T_1,\dots,T_m,Z_0,\dots,Z_k\in\mathbb{R}\quad\text{s.t.}\begin{cases}&Z_0=y, \qquad &\begin{bmatrix}Z_i & Z_{i+1}\\Z_{i+1} & x\end{bmatrix}\succeq 0 (i=0,\dots,k-1)\\&\sum_{j=1}^m w_j T_j=-2^{-k}T, \qquad &\begin{bmatrix}Z_k-x-T_j & -\sqrt{t_j}T_j\\-\sqrt{t_j}T_j & x-t_jT_j\end{bmatrix}\succeq 0(j=1,\dots,m)\end{cases}$
 #+end_theorem
 
