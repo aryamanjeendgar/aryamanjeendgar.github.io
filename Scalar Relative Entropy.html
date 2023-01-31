@@ -37,11 +37,11 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orge7bfab2">Implementing the (Approximate) Scalar Relative Entropy Cone in CVXPY:</a>
+<li><a href="#orga20d887">Implementing the (Approximate) Scalar Relative Entropy Cone in CVXPY:</a>
 <ul>
-<li><a href="#org0bca8fe">Implementing the Gauss-Legendre quadrature:</a></li>
-<li><a href="#org6ff224a">Vectorizing <code>quad_over_lin( ., .)</code>:</a></li>
-<li><a href="#org160317e">References:</a></li>
+<li><a href="#orga6a3944">Implementing the Gauss-Legendre quadrature:</a></li>
+<li><a href="#orgf1f6d35">Vectorizing <code>quad_over_lin( ., .)</code>:</a></li>
+<li><a href="#org5cb2827">References:</a></li>
 </ul>
 </li>
 </ul>
@@ -61,16 +61,16 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="index.html#orgf55840a">About</a></td>
+<td class="org-left"><a href="index.html#orgea4cb9d">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
 </tr>
 </tbody>
 </table>
-<div id="outline-container-orge7bfab2" class="outline-2">
-<h2 id="orge7bfab2">Implementing the (Approximate) Scalar Relative Entropy Cone in CVXPY:</h2>
-<div class="outline-text-2" id="text-orge7bfab2">
+<div id="outline-container-orga20d887" class="outline-2">
+<h2 id="orga20d887">Implementing the (Approximate) Scalar Relative Entropy Cone in CVXPY:</h2>
+<div class="outline-text-2" id="text-orga20d887">
 <p>
 <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-07-29 Fri&gt;</span></span><br />
 <i>This article is second in a series of posts whose intent is to document my contributions to CVXPy's codebase during my time as part of the GSoC '22 programme</i>
@@ -83,14 +83,14 @@ In this post I want to talk about <a href="https://github.com/cvxpy/cvxpy/pull/1
 <p>
 So first off, <i>what is</i>, the sREC. It is a convex cone that is incredibly similar in how it's defined to the classical <i>exponential cone</i>, here are the definitions of both for comparisons sake:
 </p>
-<div class="definition" id="orgba9dee7">
+<div class="definition" id="orgbce7f7c">
 <p>
 The exponential cone is a convex subset of \(\mathbb{R}^3\) defined as:<br />
 \(K_{\text{exp}}=\{(x_1, x_2, x_3): x_1\geq x_2 e^{x_3/x_{2}}, x_2>0\}\cup\{(x_1,0,  x_3): x_1\geq0, x_3\leq 0\}\)
 </p>
 
 </div>
-<div class="definition" id="orgc4abcd1">
+<div class="definition" id="org1bcba7f">
 <p>
 The <b>sREC</b> is a convex subset of \(\mathbb{R}^3\) defined as:<br />
 \(K_{\text{re}}=\{(x,y,\tau)\in\mathbb{R}_{+ + }\times\mathbb{R}_{ ++}\times\mathbb{R}: x\log(x/y)\leq\tau\}\)
@@ -109,7 +109,7 @@ Now, naturally, the next thing to discuss is the nature of the approximation its
 <p>
 But, to put it very simply, the main result of <a href="https://arxiv.org/abs/1705.00812">[1]​</a> constructs a semidefinite approximation to the so-called <i>Operator Relative Entropy Cone</i> (which is the matrix generalization of the <b>sREC</b>). It does this by carefully constructing an approximation to the logarithm by using it's integral representation (namely: \(\log(x)=\int_0^1\frac{x-1}{t(x-1)+1}dt\)), which is in turn approximated by using a quadrature method (in this case, it is the <a href="https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_quadrature#:~:text=In%20numerical%20analysis%2C%20Gauss%E2%80%93Legendre,the%20rule%20takes%20the%20form%3A&amp;text=xi%20are%20the%20roots%20of%20the%20nth%20Legendre%20polynomial.">Gauss-Legendre quadrature</a>), hence, we write: \(\log(x)\approx r_m(x):=\sum_{j=1}^m w_j\frac{x-1}{t_j(x-1)+1}\) &#x2014; this approximation is powerful because \(r_m\) is concave and <i>semidefinite representable</i>! Hence, using this function the <b>sREC</b> may be re-written as:
 </p>
-<div class="definition" id="org7956f4b">
+<div class="definition" id="orgb7b94df">
 <p>
 The \((m,k)\) -approximation to the <b>sREC</b> is the following cone:<br />
 \(K_{m,k}:=\{(x,y,t)\in\mathbb{R}^2_{+ + }\times\mathbb{R}: x r_m(x/y)\leq t\}\)
@@ -121,7 +121,7 @@ The \((m,k)\) -approximation to the <b>sREC</b> is the following cone:<br />
 I reproduce the actual semidefinite representation for the above defined \(K_{m,k}\) from the paper, below:
 </p>
 
-<div class="theorem" id="orgeaf6717">
+<div class="theorem" id="org0bcedd1">
 <p>
 \(K_{m,k}\) has the following semidefinite representation:<br />
 \[
@@ -142,9 +142,9 @@ Now, to that end, there existed the <code>quad_over_lin(X, y)</code> atom in CVX
 </p>
 </div>
 
-<div id="outline-container-org0bca8fe" class="outline-3">
-<h3 id="org0bca8fe">Implementing the Gauss-Legendre quadrature:</h3>
-<div class="outline-text-3" id="text-org0bca8fe">
+<div id="outline-container-orga6a3944" class="outline-3">
+<h3 id="orga6a3944">Implementing the Gauss-Legendre quadrature:</h3>
+<div class="outline-text-3" id="text-orga6a3944">
 <p>
 A quadrature algorithm is basically anything that will spit out a set of <i>nodes</i> and <i>weights</i> (corresponding to each node) over which the function will simply be evaluated and then summed over (with each evaluation being scaled by the appropriate weight). The Gauss-Legendre quadrature in specific, admits a very rich and interesting formulation in terms of the <a href="https://en.wikipedia.org/wiki/Legendre_polynomials"><i>Legendre Polynomials</i></a>, namely, the nodes of the G-L quadrature are nothing but the roots of the Legendre polynomials! Now comes the question of how does one generate these roots of the polynomials &#x2014; as it turns out, there is a very special passage that exists, starting all the way from the <a href="https://en.wikipedia.org/wiki/Arnoldi_iteration"><i>Arnoldi iteration</i></a> which gets specialised to the <a href="https://en.wikipedia.org/wiki/Lanczos_algorithm"><i>Lanczos Algorithm</i></a> (by restricting the input matrix \(\boldsymbol{A}\) to be <i>symmetric</i>) whose adaption to the continuous regime (i.e. <i>functions</i> \(\leftrightarrow\) <i>vectors</i> and <i>operators</i> \(\leftrightarrow\) <i>matrices</i>) yields us the required nodes.
 </p>
@@ -156,7 +156,7 @@ Namely, we obtain the following recurrence (whose elements are to be subsequentl
 \]
 Which in leads us to the following definition:
 </p>
-<div class="definition" id="orgbd01cd3">
+<div class="definition" id="org20146d5">
 <p>
 The <i>Jacobi matrix</i> can be constructed from the above above set of recurrence coefficients \(\{\alpha_n\}\) and \(\{\beta_n\}\) as:<br />
 \[
@@ -169,7 +169,7 @@ T_n=\begin{bmatrix}\alpha_1 & \beta_1 & 0 & \cdots & 0\\\beta_1 & \alpha_2 & \be
 <p>
 With this, we have the following theorem:
 </p>
-<div class="theorem" id="org5934fdd">
+<div class="theorem" id="org48d2ece">
 <p>
 With \(T_n\) being the \(n\times n\) Jacobi matrix, let \(T_n=VDV^T\) be an orthogonal diagonalization of \(V\) with \(V=[v_1|v_2|\cdots|v_n]\) and \(D=\text{diag}(\lambda_1, \cdots, \lambda_n)\). Then the nodes of the Gauss-Legendre quadrature formula are given by:
 \[
@@ -202,9 +202,9 @@ This entire elegant mathematical structure can be captured in just a few lines o
 </div>
 </div>
 
-<div id="outline-container-org6ff224a" class="outline-3">
-<h3 id="org6ff224a">Vectorizing <code>quad_over_lin( ., .)</code>:</h3>
-<div class="outline-text-3" id="text-org6ff224a">
+<div id="outline-container-orgf1f6d35" class="outline-3">
+<h3 id="orgf1f6d35">Vectorizing <code>quad_over_lin( ., .)</code>:</h3>
+<div class="outline-text-3" id="text-orgf1f6d35">
 <p>
 Vectorizing the input over <code>y</code> turned out to be somewhat of an involved process. For starters, we opted to move away from using <code>quad_over_lin</code> out of the box, and chose to write our own function for constraining a set of variables to the rotated SOC, here is the code for the same:
 </p>
@@ -258,9 +258,9 @@ i.e. every row of <code>X</code> corresponds to every entry of <code>t</code> fo
 </div>
 </div>
 
-<div id="outline-container-org160317e" class="outline-3">
-<h3 id="org160317e">References:</h3>
-<div class="outline-text-3" id="text-org160317e">
+<div id="outline-container-org5cb2827" class="outline-3">
+<h3 id="org5cb2827">References:</h3>
+<div class="outline-text-3" id="text-org5cb2827">
 <p>
 <a href="https://arxiv.org/pdf/1705.00812.pdf">[1]: Hamza Fawzi, J. Saunderson and Pablo A. Parrilo, <i>Semidefinite approximations of the matrix logarithm</i></a><br />
 <a href="https://www.math.stonybrook.edu/~bishop/classes/math331.F17/Projects/GaussVsCC.pdf">[2]: Lloyd N. Trefethen. <i>Is Gauss quadrature better than Clenshaw-Curtis?</i> SIAM Review, 2008</a><br />
