@@ -15,6 +15,9 @@ Hi! I am Aryaman Jeendgar, a 4th year undergrad from BITS Pilani, Hyderabad Camp
 
 Broadly, I am interested in research problems with a mathematical flavor, and love writing code to serve solutions to such problems!
 
+I am currently a *Research Engineer Fellow* @ Princeton University (under /Princeton Research Computing/), contributing to the ongoing =scikit-HEP= effort. I am also participating as a part of the =GSoC-2023= program, where I am (once again!) contributing to CVXPY!
+
+I will be spending the first chunk of my undergraduate thesis working with [[https://rileyjmurray.wordpress.com/][Dr. Riley J. Murray]] at /Sandia National Laboratories/, where I will be working on theoretical problems concerning the Operator Relative Entropy! The second half of my thesis will potentially be spent at /Amazon Science, Luxembourg/ working with the supply chain optimization team on building operations research tools and methods for Amazon Fulfillment centres (FC's).
 
 I spent the summer of /'22/ writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Cloud Systems/ Research group!
 

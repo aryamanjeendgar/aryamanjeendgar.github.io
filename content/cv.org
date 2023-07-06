@@ -3,13 +3,13 @@
 
 | [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
 
-*/Click on the image below to download the PDF/*
-[[file:AryamanJeendgar_resume.pdf][file:./cv.png]]
+# */Click on the image below to download the PDF/*
+[[file:AryamanJeendgar_resume.pdf][/*Click here to download my Resume*/]]
 
 #+begin_export latex
-\begin{figure}[h!]
+% \begin{figure}[h!]
     %\\includegraphics{./AryamanJeendgar_resume.pdf}
-    includegraphics{./cv.png}
-    \caption{Early 2022 resume}
-\end{figure}
+    % includegraphics{./cv.png}
+    % \caption{Early 2022 resume}
+% \end{figure}
 #+end_export
