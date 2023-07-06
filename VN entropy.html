@@ -8,27 +8,38 @@
 <title>VN Entropy</title>
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" href="https://latex.now.sh/style.css" />
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        displayAlign: "center",
-        displayIndent: "0em",
-
-        "HTML-CSS": { scale: 100,
-                        linebreaks: { automatic: "false" },
-                        webFont: "TeX"
-                       },
-        SVG: {scale: 100,
-              linebreaks: { automatic: "false" },
-              font: "TeX"},
-        NativeMML: {scale: 100},
-        TeX: { equationNumbers: {autoNumber: "AMS"},
-               MultLineWidth: "85%",
-               TagSide: "right",
-               TagIndent: ".8em"
-             }
-});
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
 </head>
 <body>
 <div id="content" class="content">
@@ -37,9 +48,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgd73da33">Implementing the Von Neumann Entropy in CVXPY:</a>
+<li><a href="#org5d9fe3f">Implementing the Von Neumann Entropy in CVXPY:</a>
 <ul>
-<li><a href="#org50d0bf7">References:</a></li>
+<li><a href="#orge8b1548">References:</a></li>
 </ul>
 </li>
 </ul>
@@ -59,16 +70,16 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="index.html#org2b2749c">About</a></td>
+<td class="org-left"><a href="index.html#orgb0f6b4b">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
 </tr>
 </tbody>
 </table>
-<div id="outline-container-orgd73da33" class="outline-2">
-<h2 id="orgd73da33">Implementing the Von Neumann Entropy in CVXPY:</h2>
-<div class="outline-text-2" id="text-orgd73da33">
+<div id="outline-container-org5d9fe3f" class="outline-2">
+<h2 id="org5d9fe3f">Implementing the Von Neumann Entropy in CVXPY:</h2>
+<div class="outline-text-2" id="text-org5d9fe3f">
 <p>
 <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-06-06 Mon&gt;</span></span><br />
 In this post I want to talk about <a href="https://github.com/cvxpy/cvxpy/pull/1789">my PR</a> for appending support for the <a href="https://en.wikipedia.org/wiki/Von_Neumann_entropy">Von Neumann Entropy</a> as an atom in <a href="https://www.cvxpy.org/">CVXPY</a>.
@@ -112,23 +123,23 @@ Moving on from eigenvalue constraints, we now turn our attention to <a href="htt
 <span style="font-style: italic;">Program- 1</span>
 <span style="font-style: italic;">"""</span>
 <span style="font-weight: bold; font-style: italic;">X</span> = cp.Variable(shape = (3,3), PSD = <span style="font-weight: bold; text-decoration: underline;">True</span>)
-objective = cp.Minimize(-von_neumann_entr(X))
-cons1 = trace(A1 @ X) == b[0]
-cons2 = trace(A2 @ X) == b[1]
-cons3 = X - cp.diag(cp.diag(X)) == 0 <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">equivalent to 'diag=True'</span>
-prob = cp.Problem(objective, [cons1, cons2, cons3])
+<span style="font-weight: bold; font-style: italic;">objective</span> = cp.Minimize(-von_neumann_entr(X))
+<span style="font-weight: bold; font-style: italic;">cons1</span> = trace(A1 @ X) == b[0]
+<span style="font-weight: bold; font-style: italic;">cons2</span> = trace(A2 @ X) == b[1]
+<span style="font-weight: bold; font-style: italic;">cons3</span> = X - cp.diag(cp.diag(X)) == 0 <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">equivalent to 'diag=True'</span>
+<span style="font-weight: bold; font-style: italic;">prob</span> = cp.Problem(objective, [cons1, cons2, cons3])
 
 <span style="font-style: italic;">"""</span>
 <span style="font-style: italic;">Program-2</span>
 <span style="font-style: italic;">"""</span>
-X = cp.Variable(shape = (3,3), diag = <span style="font-weight: bold; text-decoration: underline;">True</span>)
+<span style="font-weight: bold; font-style: italic;">X</span> = cp.Variable(shape = (3,3), diag = <span style="font-weight: bold; text-decoration: underline;">True</span>)
 <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">following objective is equivalent to '-von_neumann_entr'</span>
 <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">in the case of X \in diag(v)</span>
-objective = cp.Minimize(-cp.<span style="font-weight: bold;">sum</span>(cp.entr(cp.diag(X))))
-cons1 = trace(A1 @ X) == b[0]
-cons2 = trace(A2 @ X) == b[1]
-cons3 = X &gt;&gt; 0
-prob = cp.Problem(objective, [cons1, cons2, cons3])
+<span style="font-weight: bold; font-style: italic;">objective</span> = cp.Minimize(-cp.<span style="font-weight: bold;">sum</span>(cp.entr(cp.diag(X))))
+<span style="font-weight: bold; font-style: italic;">cons1</span> = trace(A1 @ X) == b[0]
+<span style="font-weight: bold; font-style: italic;">cons2</span> = trace(A2 @ X) == b[1]
+<span style="font-weight: bold; font-style: italic;">cons3</span> = X &gt;&gt; 0
+<span style="font-weight: bold; font-style: italic;">prob</span> = cp.Problem(objective, [cons1, cons2, cons3])
 </pre>
 </div>
 <p>
@@ -164,9 +175,9 @@ Namely, an SDP won't always have a unique solution, and it is not very straightf
 </ol>
 </div>
 
-<div id="outline-container-org50d0bf7" class="outline-3">
-<h3 id="org50d0bf7">References:</h3>
-<div class="outline-text-3" id="text-org50d0bf7">
+<div id="outline-container-orge8b1548" class="outline-3">
+<h3 id="orge8b1548">References:</h3>
+<div class="outline-text-3" id="text-orge8b1548">
 <p>
 [1]: Michael Charles Grant, 2004, <i>Disciplined Convex Programming</i>, PhD Dissertation<br />
 [2]: V. Chandrasekaran and Parikshit Shah, 2016, <i>Relative entropy optimization and its applications</i>, Mathematical Programming <b>161</b>, 1-32, 2017<br />
@@ -178,7 +189,7 @@ Namely, an SDP won't always have a unique solution, and it is not very straightf
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 28.2 (<a href="https://orgmode.org">Org</a> mode 9.5.5)</p>
+<p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 29.0.92 (<a href="https://orgmode.org">Org</a> mode 9.6.6)</p>
 </div>
 </body>
 </html>
