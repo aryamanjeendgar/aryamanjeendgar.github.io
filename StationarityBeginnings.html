@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stationarity Beginnings</title>
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" href="https://latex.now.sh/style.css" />
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
+</script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Stationarity Beginnings</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgceeeaed">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</a>
+<ul>
+<li><a href="#orga0afc87">A first attempt at the problem &#x2014; immediate concerns:</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"><a href="index.html#orgc61b4c2">About</a></td>
+<td class="org-left"><a href="blog.html">Blog</a></td>
+<td class="org-left"><a href="cv.html">CV</a></td>
+<td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
+</tr>
+</tbody>
+</table>
+
+<div id="outline-container-orgceeeaed" class="outline-2">
+<h2 id="orgceeeaed">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</h2>
+<div class="outline-text-2" id="text-orgceeeaed">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">&lt;2023-07-13 Thu&gt;</span></span><br />
+</p>
+
+<p>
+In this post, I want to talk about <a href="https://github.com/cvxpy/cvxpy/pull/2171">my PR</a>, where we take the first steps for my <i>Google Summer of Code '23</i> project by adding in support for verifying stationarity for problems with differentiable components within CVXPY.
+</p>
+
+<p>
+To re-iterate, the goal for my project this summer is to take the first steps towards easy verification of the <a href="https://en.wikipedia.org/wiki/Karush%E2%80%93Kuhn%E2%80%93Tucker_conditions"><b>Karush-Kuhn-Tucker optimality conditions</b></a> for problems solved within CVXPY. For a quick recap, informally, the following four statements comprise of the KKT conditions:
+</p>
+
+<ol class="org-ol">
+<li><p>
+<b>Stationarity of the Lagrangian</b>:
+</p>
+\begin{equation*}
+ \nabla\mathcal{L}(\boldsymbol{x, \lambda,\nu})=0
+\end{equation*}
+<p>
+The stationarity condition tells us that for a given dual pair \((\lambda,\nu)\), the point \(x\) minimizes the Lagrangian \(\mathcal{L}(x,\lambda,\nu)\). We will later use a more general version of stationarity for verifying the same w.r.t certain variables.
+</p></li>
+<li><p>
+<b>Complimentary Slackness</b>:
+</p>
+\begin{equation*}
+ \lambda_{i}.f_{i}(x)=0,i=1,2,\ldots,m
+\end{equation*}
+<p>
+Can be easily derived by assuming strong duality.
+</p></li>
+<li><p>
+<b>Primal feasibility</b>:
+</p>
+\begin{align*}
+f_{i}(x)&\leq 0, i=1,2,\ldots,m\\
+h_{i}(x)&=0, i=1,2,\ldots,p\\
+\end{align*}</li>
+<li><p>
+<b>Dual feasibility</b>:
+</p>
+\begin{equation*}
+\lambda_{i}\geq 0,i=1,2,\ldots,m
+\end{equation*}</li>
+</ol>
+<p>
+Conditions 3 and 4 simply ensure feasibility of the computed solution, and are pretty intuitive.
+</p>
+
+<p>
+Since CVXPY does not explicitly construct the Lagrangian, we had to do as much in our verification of it's stationarity. The major delievrable of this PR is the <code>check_stationarity_lagrangian</code> method &#x2014; which for the time being has been defined within the <code>SolverTestHelper</code> class (that stays in the <code>solver_test_helpers.py</code> file). The reason for this is that the class also has several other methods which can be used to verify the other KKT conditions (including a ~more or less working implementation for verifying complementarity and a partial implementation for verifying dual feasibility &#x2014; which will be the next subject of our work).
+</p>
+</div>
+
+<div id="outline-container-orga0afc87" class="outline-3">
+<h3 id="orga0afc87">A first attempt at the problem &#x2014; immediate concerns:</h3>
+<div class="outline-text-3" id="text-orga0afc87">
+<p>
+In this subsection, I want to discuss one of our early implementations of the method. Before I do that, I want to talk about how we will be computing and representing derivatives of the Lagrangian.
+</p>
+
+<p>
+Derivatives are computed using the <code>grad</code> facility in CVXPY. The <code>grad</code> method is defined for (<i>almost</i>) every <code>Atom</code> within CVXPY (examples of current exceptions include the <code>von_neumann_entr</code> for instance). As far as the construction of the Lagrangian is concerned, we need to include the contribution from the objective function within the same &#x2014; this can be accessed via <code>cp.Problem.objective.expr</code> (the objective of any CVXPY problem would be a function of the decision variables constructed using a combination of several <code>Atom</code> classes in CVXPY. Care must be taken to ensure that the resulting problem is <code>DCP</code> in nature).
+</p>
+
+<p>
+Moving the objective function into the Lagrangian is easy enough, but what about the constraints? Constraints are represented in CVXPY via the <code>Constraint</code> class. What we need to move into the Lagrangian in this case, are the <i>constraint functions</i>, i.e., for some constraint \(f_{i}(x) \leq g_{i}(x)\), we would add the contribution \((f_{i}(x) - g_{i}(x))\) (with it's corresponding lagrangian multiplier, \(\lambda_{i}\)) &#x2014; consequently, for verifying stationarity, we would be expected to differentiate this particular contribution.
+</p>
+
+<p>
+However, in CVXPY, there is no easy way to access these constraint functions from constructed <code>Constraint</code> objects. However, there is a fairly convenient path that already exists within CVXPY for our purpose. For this, we make the following observation (here the lagrangian mutiplier corresponding to \(h_{i}(x)\) is \(\lambda_{i}\))
+\[
+  \nabla_{\textbf{x}} h_{i}(\text{aff}(\boldsymbol{x}))\\
+  \Updownarrow \\
+\]
+\[
+  \nabla_{\boldsymbol{x}}\text{aff}(\boldsymbol{x})\\
+  \lambda_{i}\in K
+\]
+Where, \(K\) is the cone defined via \(h_{i}\leq 0\)
+(<b>NOTE</b>: The reason we are assuming that all constrained expressions are <i>affine</i> is due to <code>DCP</code> reasons)
+</p>
+
+<p>
+This means that we can now move in constraint functions into the lagrangian for verifying stationarity very simply as <code>cp.scalar_product(con.expr, con.dual_value)</code> &#x2014; here, <code>con.expr</code> is the affine expression that was constrained to lie within <code>con subclasses Constraint</code>, the dual values that CVXPY recovers already imposes \(\lambda_{i}\in K\).
+</p>
+
+<p>
+Also, for checking what gradients are problematic within the final computation, we compute the standard frobenius norm of the same (hence the choice of variable names <code>bad_fro_norms</code>). Other choices for matrix norms could potentially have worked equally well.
+</p>
+
+<p>
+For supporting new <code>Constraint</code> sets in CVXPY for stationarity calculations, we would require dual variable recovery to be implemented for the same (for example, <code>PowConeND, RelEntrConeQuad</code> and <code>OpRelEntrConeQuad</code> do not have computation of dual variables implemented as of this date).
+</p>
+
+<p>
+Similarly, for supporting new <code>Atom</code> functions for stationarity calculations, we would need to be able to compute their derivatives (or more generally, their <i>subgradients</i>)
+</p>
+
+<p>
+Here is our first implementation. It should be read fairly easily with the above prose in mind.
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">def</span> <span style="font-weight: bold;">check_stationary_lagrangian</span>(<span style="font-weight: bold;">self</span>, places) -&gt; <span style="font-weight: bold; text-decoration: underline;">None</span>:
+        <span style="font-weight: bold; font-style: italic;">L</span> = <span style="font-weight: bold;">self</span>.prob.objective.expr
+        <span style="font-weight: bold;">for</span> con <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">self</span>.constraints:
+            <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">isinstance</span>(con, (cp.constraints.Inequality,
+                                cp.constraints.Equality)):
+                <span style="font-weight: bold; font-style: italic;">dual_var_value</span> = con.dual_value
+                <span style="font-weight: bold; font-style: italic;">prim_var_expr</span> = con.expr
+                <span style="font-weight: bold; font-style: italic;">L</span> = L + cp.scalar_product(dual_var_value, prim_var_expr)
+            <span style="font-weight: bold;">elif</span> <span style="font-weight: bold;">isinstance</span>(con, (cp.constraints.ExpCone,
+                                cp.constraints.SOC,
+                                cp.constraints.Zero,
+                                cp.constraints.NonNeg,
+                                cp.constraints.PSD,
+                                cp.constraints.PowCone3D)):
+                <span style="font-weight: bold; font-style: italic;">L</span> = L - cp.scalar_product(con.args, con.dual_value)
+            <span style="font-weight: bold;">else</span>:
+                <span style="font-weight: bold;">raise</span> <span style="font-weight: bold; text-decoration: underline;">NotImplementedError</span>()
+        <span style="font-weight: bold; font-style: italic;">g</span> = L.grad
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">compute norm</span>
+        <span style="font-weight: bold; font-style: italic;">bad_fro_norms</span> = []
+        <span style="font-weight: bold;">for</span> (k, v) <span style="font-weight: bold;">in</span> g.items():
+            <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">(k, v) = (cvxpy Variable, SciPy sparse matrix)</span>
+            <span style="font-weight: bold; font-style: italic;">norm</span> = np.linalg.norm(v.data) / np.sqrt(k.size)
+            <span style="font-weight: bold;">if</span> norm &gt; 10**(-places):
+                bad_fro_norms.append((norm, k.name()))
+        <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">len</span>(bad_fro_norms):
+            <span style="font-weight: bold; font-style: italic;">msg</span> = f<span style="font-style: italic;">"""</span><span style="font-weight: bold; text-decoration: underline;">\n</span>
+<span style="font-style: italic;">        The gradient of Lagrangian with respect to the primal variables</span>
+<span style="font-style: italic;">        is above the threshold of 10^</span>{-places}<span style="font-style: italic;">. The names of the problematic</span>
+<span style="font-style: italic;">        variables and the corresponding gradient norms are as follows:</span>
+<span style="font-style: italic;">            """</span>
+            <span style="font-weight: bold;">for</span> norm, varname <span style="font-weight: bold;">in</span> bad_fro_norms:
+                <span style="font-weight: bold; font-style: italic;">msg</span> += f<span style="font-style: italic;">"</span><span style="font-weight: bold; text-decoration: underline;">\n\t\t\t</span>{varname}<span style="font-style: italic;"> : </span>{norm}<span style="font-style: italic;">"</span>
+            <span style="font-weight: bold; font-style: italic;">msg</span> += <span style="font-style: italic;">'</span><span style="font-weight: bold; text-decoration: underline;">\n</span><span style="font-style: italic;">'</span>
+            <span style="font-weight: bold;">self</span>.tester.fail(msg)
+        <span style="font-weight: bold;">pass</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 29.0.92 (<a href="https://orgmode.org">Org</a> mode 9.6.6)</p>
+</div>
+</body>
+</html>
