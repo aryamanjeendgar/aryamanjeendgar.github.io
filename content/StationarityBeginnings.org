@@ -1,0 +1,100 @@
+#+title: Stationarity Beginnings
+
+| [[file:index.org::about][About]] | [[file:blog.org][Blog]] | [[file:cv.org][CV]] | [[file:PaperReviews.org][Papers to Read]] |
+
+* Adding in support for verifying /Stationarity/ (for differentiable functions) in CVXPY:
+<2023-07-13 Thu>\\
+
+In this post, I want to talk about [[https://github.com/cvxpy/cvxpy/pull/2171][my PR]], where we take the first steps for my /Google Summer of Code '23/ project by adding in support for verifying stationarity for problems with differentiable components within CVXPY.
+
+To re-iterate, the goal for my project this summer is to take the first steps towards easy verification of the [[https://en.wikipedia.org/wiki/Karush–Kuhn–Tucker_conditions][*Karush-Kuhn-Tucker optimality conditions*]] for problems solved within CVXPY. For a quick recap, informally, the following four statements comprise of the KKT conditions:
+
+1. *Stationarity of the Lagrangian*:
+   \begin{equation*}
+    \nabla\mathcal{L}(\boldsymbol{x, \lambda,\nu})=0
+   \end{equation*}
+   The stationarity condition tells us that for a given dual pair $(\lambda,\nu)$, the point $x$ minimizes the Lagrangian $\mathcal{L}(x,\lambda,\nu)$. We will later use a more general version of stationarity for verifying the same w.r.t certain variables.
+2. *Complimentary Slackness*:
+   \begin{equation*}
+    \lambda_{i}.f_{i}(x)=0,i=1,2,\ldots,m
+   \end{equation*}
+   Can be easily derived by assuming strong duality.
+3. *Primal feasibility*:
+   \begin{align*}
+   f_{i}(x)&\leq 0, i=1,2,\ldots,m\\
+   h_{i}(x)&=0, i=1,2,\ldots,p\\
+   \end{align*}
+4. *Dual feasibility*:
+   \begin{equation*}
+   \lambda_{i}\geq 0,i=1,2,\ldots,m
+   \end{equation*}
+Conditions 3 and 4 simply ensure feasibility of the computed solution, and are pretty intuitive.
+
+Since CVXPY does not explicitly construct the Lagrangian, we had to do as much in our verification of it's stationarity. The major delievrable of this PR is the =check_stationarity_lagrangian= method --- which for the time being has been defined within the =SolverTestHelper= class (that stays in the =solver_test_helpers.py= file). The reason for this is that the class also has several other methods which can be used to verify the other KKT conditions (including a ~more or less working implementation for verifying complementarity and a partial implementation for verifying dual feasibility --- which will be the next subject of our work).
+
+** A first attempt at the problem --- immediate concerns:
+In this subsection, I want to discuss one of our early implementations of the method. Before I do that, I want to talk about how we will be computing and representing derivatives of the Lagrangian.
+
+Derivatives are computed using the =grad= facility in CVXPY. The =grad= method is defined for (/almost/) every =Atom= within CVXPY (examples of current exceptions include the =von_neumann_entr= for instance). As far as the construction of the Lagrangian is concerned, we need to include the contribution from the objective function within the same --- this can be accessed via =cp.Problem.objective.expr= (the objective of any CVXPY problem would be a function of the decision variables constructed using a combination of several =Atom= classes in CVXPY. Care must be taken to ensure that the resulting problem is =DCP= in nature).
+
+Moving the objective function into the Lagrangian is easy enough, but what about the constraints? Constraints are represented in CVXPY via the =Constraint= class. What we need to move into the Lagrangian in this case, are the /constraint functions/, i.e., for some constraint $f_{i}(x) \leq g_{i}(x)$, we would add the contribution $(f_{i}(x) - g_{i}(x))$ (with it's corresponding lagrangian multiplier, $\lambda_{i}$) --- consequently, for verifying stationarity, we would be expected to differentiate this particular contribution.
+
+However, in CVXPY, there is no easy way to access these constraint functions from constructed =Constraint= objects. However, there is a fairly convenient path that already exists within CVXPY for our purpose. For this, we make the following observation (here the lagrangian mutiplier corresponding to $h_{i}(x)$ is $\lambda_{i}$)
+\[
+  \nabla_{\textbf{x}} h_{i}(\text{aff}(\boldsymbol{x}))\\
+  \Updownarrow \\
+\]
+\[
+  \nabla_{\boldsymbol{x}}\text{aff}(\boldsymbol{x})\\
+  \lambda_{i}\in K
+\]
+Where, $K$ is the cone defined via $h_{i}\leq 0$
+(*NOTE*: The reason we are assuming that all constrained expressions are /affine/ is due to =DCP= reasons)
+
+This means that we can now move in constraint functions into the lagrangian for verifying stationarity very simply as =cp.scalar_product(con.expr, con.dual_value)= --- here, =con.expr= is the affine expression that was constrained to lie within =con subclasses Constraint=, the dual values that CVXPY recovers already imposes $\lambda_{i}\in K$.
+
+Also, for checking what gradients are problematic within the final computation, we compute the standard frobenius norm of the same (hence the choice of variable names =bad_fro_norms=). Other choices for matrix norms could potentially have worked equally well.
+
+For supporting new =Constraint= sets in CVXPY for stationarity calculations, we would require dual variable recovery to be implemented for the same (for example, =PowConeND, RelEntrConeQuad= and =OpRelEntrConeQuad= do not have computation of dual variables implemented as of this date).
+
+Similarly, for supporting new =Atom= functions for stationarity calculations, we would need to be able to compute their derivatives (or more generally, their /subgradients/)
+
+Here is our first implementation. It should be read fairly easily with the above prose in mind.
+#+begin_src python
+def check_stationary_lagrangian(self, places) -> None:
+        L = self.prob.objective.expr
+        for con in self.constraints:
+            if isinstance(con, (cp.constraints.Inequality,
+                                cp.constraints.Equality)):
+                dual_var_value = con.dual_value
+                prim_var_expr = con.expr
+                L = L + cp.scalar_product(dual_var_value, prim_var_expr)
+            elif isinstance(con, (cp.constraints.ExpCone,
+                                cp.constraints.SOC,
+                                cp.constraints.Zero,
+                                cp.constraints.NonNeg,
+                                cp.constraints.PSD,
+                                cp.constraints.PowCone3D)):
+                L = L - cp.scalar_product(con.args, con.dual_value)
+            else:
+                raise NotImplementedError()
+        g = L.grad
+        # compute norm
+        bad_fro_norms = []
+        for (k, v) in g.items():
+            # (k, v) = (cvxpy Variable, SciPy sparse matrix)
+            norm = np.linalg.norm(v.data) / np.sqrt(k.size)
+            if norm > 10**(-places):
+                bad_fro_norms.append((norm, k.name()))
+        if len(bad_fro_norms):
+            msg = f"""\n
+        The gradient of Lagrangian with respect to the primal variables
+        is above the threshold of 10^{-places}. The names of the problematic
+        variables and the corresponding gradient norms are as follows:
+            """
+            for norm, varname in bad_fro_norms:
+                msg += f"\n\t\t\t{varname} : {norm}"
+            msg += '\n'
+            self.tester.fail(msg)
+        pass
+#+end_src

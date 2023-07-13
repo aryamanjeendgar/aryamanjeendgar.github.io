@@ -5,3 +5,4 @@
 1. /Semidefinite approximations of the matrix logarithm/, a commentary:<<FSP,review>>
 2. [[file:VN entropy.org][Implementing the Von Neumann entropy in CVXPY]]
 3. [[file:Scalar Relative Entropy.org][Implementing the (Approximate) Scalar Relative Entropy Cone in CVXPY]]
+4. [[file:StationarityBeginnings.org][Adding in support for verifying /stationarity/ (for differentiable functions) in CVXPY]]
