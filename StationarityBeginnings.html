@@ -48,9 +48,10 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgceeeaed">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</a>
+<li><a href="#org9a64906">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</a>
 <ul>
-<li><a href="#orga0afc87">A first attempt at the problem &#x2014; immediate concerns:</a></li>
+<li><a href="#org848573a">A first attempt at the problem &#x2014; immediate concerns:</a></li>
+<li><a href="#org2b9f095">The final implementation &#x2014; handling flag constraints:</a></li>
 </ul>
 </li>
 </ul>
@@ -70,7 +71,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="index.html#orgc61b4c2">About</a></td>
+<td class="org-left"><a href="index.html#orgfff2233">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
@@ -78,9 +79,9 @@
 </tbody>
 </table>
 
-<div id="outline-container-orgceeeaed" class="outline-2">
-<h2 id="orgceeeaed">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</h2>
-<div class="outline-text-2" id="text-orgceeeaed">
+<div id="outline-container-org9a64906" class="outline-2">
+<h2 id="org9a64906">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</h2>
+<div class="outline-text-2" id="text-org9a64906">
 <p>
 <span class="timestamp-wrapper"><span class="timestamp">&lt;2023-07-13 Thu&gt;</span></span><br />
 </p>
@@ -135,9 +136,9 @@ Since CVXPY does not explicitly construct the Lagrangian, we had to do as much i
 </p>
 </div>
 
-<div id="outline-container-orga0afc87" class="outline-3">
-<h3 id="orga0afc87">A first attempt at the problem &#x2014; immediate concerns:</h3>
-<div class="outline-text-3" id="text-orga0afc87">
+<div id="outline-container-org848573a" class="outline-3">
+<h3 id="org848573a">A first attempt at the problem &#x2014; immediate concerns:</h3>
+<div class="outline-text-3" id="text-org848573a">
 <p>
 In this subsection, I want to discuss one of our early implementations of the method. Before I do that, I want to talk about how we will be computing and representing derivatives of the Lagrangian.
 </p>
@@ -145,6 +146,15 @@ In this subsection, I want to discuss one of our early implementations of the me
 <p>
 Derivatives are computed using the <code>grad</code> facility in CVXPY. The <code>grad</code> method is defined for (<i>almost</i>) every <code>Atom</code> within CVXPY (examples of current exceptions include the <code>von_neumann_entr</code> for instance). As far as the construction of the Lagrangian is concerned, we need to include the contribution from the objective function within the same &#x2014; this can be accessed via <code>cp.Problem.objective.expr</code> (the objective of any CVXPY problem would be a function of the decision variables constructed using a combination of several <code>Atom</code> classes in CVXPY. Care must be taken to ensure that the resulting problem is <code>DCP</code> in nature).
 </p>
+
+<p>
+There are two major issues that we faced at this juncture:
+</p>
+<ol class="org-ol">
+<li>Differing sign of the contribution from different <code>Constraint</code> objects</li>
+<li>Being able to move constraint functions into the Lagrangian</li>
+</ol>
+
 
 <p>
 Moving the objective function into the Lagrangian is easy enough, but what about the constraints? Constraints are represented in CVXPY via the <code>Constraint</code> class. What we need to move into the Lagrangian in this case, are the <i>constraint functions</i>, i.e., for some constraint \(f_{i}(x) \leq g_{i}(x)\), we would add the contribution \((f_{i}(x) - g_{i}(x))\) (with it's corresponding lagrangian multiplier, \(\lambda_{i}\)) &#x2014; consequently, for verifying stationarity, we would be expected to differentiate this particular contribution.
@@ -177,7 +187,7 @@ For supporting new <code>Constraint</code> sets in CVXPY for stationarity calcul
 </p>
 
 <p>
-Similarly, for supporting new <code>Atom</code> functions for stationarity calculations, we would need to be able to compute their derivatives (or more generally, their <i>subgradients</i>)
+Similarly, for supporting new <code>Atom</code> functions for stationarity calculations, we would need to be able to compute their derivatives (or more generally, their <i>subgradients</i>, which is a major addition we plan on working later on via the introduction of a new <code>ConvexSet</code> class) via the <code>grad</code> facility.
 </p>
 
 <p>
@@ -222,12 +232,169 @@ Here is our first implementation. It should be read fairly easily with the above
         <span style="font-weight: bold;">pass</span>
 </pre>
 </div>
+
+<p>
+The next biggest issue that we face is that CVXPY allows users to pass in certain constraints on variables implicitly via flags during their initialization. Note, by our current convention of defining the Lagrangian, we are only moving the objective function and the constraints that have been explicitly passed in by the user to the problem into the Lagrangian. However, we cannot do this in the case of constraints imposed on variables via flags at initialization time &#x2014; for the same we had to interpret the stationarity condition in a slightly more general sense, as described in the next section.
+</p>
+</div>
+</div>
+<div id="outline-container-org2b9f095" class="outline-3">
+<h3 id="org2b9f095">The final implementation &#x2014; handling flag constraints:</h3>
+<div class="outline-text-3" id="text-org2b9f095">
+<p>
+A more general way to interpret stationarity is via the characterization of the dual cone of the domain of the variable w.r.t we are differentiating (henceforth called the <i>differentat-er</i> XD). Specifically, in the case when there are no implicit constraints on the domain of the <i>differentiat-er</i>, i.e. when the domain of the same is \(\mathbb{R}^{n\times n}\), the dual cone of the same is the singleton set containing the zero element \(\mathbb{R^{n\times n}}\). Similarly, in the case when the decision variable that is playing the role of the <i>differentiat-er</i> is constrained to lie in some cone non-trivial cone \(K\), we will instead check if the resultant gradient lies in it's corresponding dual cone \(K^{*}\).
+</p>
+
+<p>
+As of today, the different kinds of (real and conic) constraints that CVXPY allows users to impose via flags are the following:
+</p>
+<div class="org-src-container">
+<pre class="src src-python">nonneg : <span style="font-weight: bold;">bool</span>
+nonpos : <span style="font-weight: bold;">bool</span>
+symmetric : <span style="font-weight: bold;">bool</span>
+diag : <span style="font-weight: bold;">bool</span>
+PSD : <span style="font-weight: bold;">bool</span>
+NSD : <span style="font-weight: bold;">bool</span>
+pos : <span style="font-weight: bold;">bool</span>
+neg : <span style="font-weight: bold;">bool</span>
+</pre>
+</div>
+<p>
+CVXPY also supports <code>boolean, integer</code> but <b>MIP's</b> (Mixed Integer Programs) cannot be differentiated through.
+</p>
+
+<p>
+Of these, we do not support diagonal matrices via <code>diag</code> (the cone dual to the cone of diagonal matrices is the set of matrices which have all diagonal elements zero, the so-called <i>hollow matrices</i>) as of now because of their peculiar internal reprsentation within CVXPY (via <code>SciPy CSC</code> matrices). The dual-cones for all of the others and how they've been implemented has been detailed in the code snippet below. For all flags with the exception of <code>symmetric</code>, we follow the same pattern of first constructing the constraint corresponding to the dual cone of the domain cone and computing the violation of the gradient w.r.t the same by chcecking the <code>residual</code> property. For example, here is how the current code for <code>symmetric</code> would be adapted to the same pattern:
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">if</span> opt_var.is_symmetric():
+    <span style="font-style: italic;">"""The cone of skew-symmetric matrices is dual to the cone</span>
+<span style="font-style: italic;">    of symmetric matrices"""</span>
+    <span style="font-weight: bold; font-style: italic;">g_bad_mat</span> = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+    <span style="font-weight: bold; font-style: italic;">tmp_con</span> = g_bad_mat == -g_bad_mat.T
+    <span style="font-weight: bold; font-style: italic;">dual_cone_violation</span> = tmp_con.residual
+    <span style="font-weight: bold;">if</span> dual_cone_violation &gt; 10**(-places):
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">some code</span>
+        <span style="font-weight: bold;">pass</span>
+</pre>
+</div>
+<p>
+Here is the final implementation of <code>check_stationarity_lagrangian</code>. Again, most of this should follow directly from the prose above, another point worthy of note is the order of the flag tests. We check for <code>PSD/NSD</code> before <code>symmetric</code> because when a user declares a variable <code>PSD/NSD=True</code> CVXPY additionally also sets <code>symmetric=True</code> (this is not done when the user explicitly passes in the constraint <code>X &lt;&lt; 0</code> or <code>X &gt;&gt; 0</code>).
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">def</span> <span style="font-weight: bold;">check_stationary_lagrangian</span>(<span style="font-weight: bold;">self</span>, places) -&gt; <span style="font-weight: bold; text-decoration: underline;">None</span>:
+    <span style="font-weight: bold; font-style: italic;">L</span> = <span style="font-weight: bold;">self</span>.prob.objective.expr
+    <span style="font-weight: bold; font-style: italic;">objective</span> = <span style="font-weight: bold;">self</span>.prob.objective
+    <span style="font-weight: bold;">if</span> objective.NAME == <span style="font-style: italic;">'minimize'</span>:
+        <span style="font-weight: bold; font-style: italic;">L</span> = objective.expr
+    <span style="font-weight: bold;">else</span>:
+        <span style="font-weight: bold; font-style: italic;">L</span> = -objective.expr
+    <span style="font-weight: bold;">for</span> con <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">self</span>.constraints:
+        <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">isinstance</span>(con, (cp.constraints.Inequality,
+                            cp.constraints.Equality)):
+            <span style="font-weight: bold; font-style: italic;">dual_var_value</span> = con.dual_value
+            <span style="font-weight: bold; font-style: italic;">prim_var_expr</span> = con.expr
+            <span style="font-weight: bold; font-style: italic;">L</span> = L + cp.scalar_product(dual_var_value, prim_var_expr)
+        <span style="font-weight: bold;">elif</span> <span style="font-weight: bold;">isinstance</span>(con, (cp.constraints.ExpCone,
+                                cp.constraints.SOC,
+                                cp.constraints.Zero,
+                                cp.constraints.NonNeg,
+                                cp.constraints.PSD,
+                                cp.constraints.PowCone3D)):
+            <span style="font-weight: bold; font-style: italic;">L</span> = L - cp.scalar_product(con.args, con.dual_value)
+        <span style="font-weight: bold;">else</span>:
+            <span style="font-weight: bold;">raise</span> <span style="font-weight: bold; text-decoration: underline;">NotImplementedError</span>()
+    <span style="font-weight: bold;">try</span>:
+        <span style="font-weight: bold; font-style: italic;">g</span> = L.grad
+    <span style="font-weight: bold;">except</span> <span style="font-weight: bold; text-decoration: underline;">TypeError</span> <span style="font-weight: bold;">as</span> e:
+        <span style="font-weight: bold;">assert</span> <span style="font-style: italic;">'is not subscriptable'</span> <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">str</span>(e)
+        <span style="font-weight: bold; font-style: italic;">msg</span> = <span style="font-style: italic;">"""</span><span style="font-weight: bold; text-decoration: underline;">\n</span>
+<span style="font-style: italic;">        CVXPY problems with `diag` variables are not supported for</span>
+<span style="font-style: italic;">        stationarity checks as of now</span>
+<span style="font-style: italic;">        """</span>
+        <span style="font-weight: bold;">self</span>.tester.fail(msg)
+    <span style="font-weight: bold; font-style: italic;">bad_norms</span> = []
+
+    <span style="font-style: italic;">"""The convention that we follow for construting the Lagrangian is: 1) Move all</span>
+<span style="font-style: italic;">    explicitly passed constraints to the problem (via Problem.constraints) into the</span>
+<span style="font-style: italic;">    Lagrangian --- dLdX == 0 for any such variables 2) Constraints that have</span>
+<span style="font-style: italic;">    implicitly been imposed on variables at the time of declaration via specific</span>
+<span style="font-style: italic;">    flags (e.g.: PSD/symmetric etc.), in such a case we check, `dLdX\in K^{*}`, where</span>
+<span style="font-style: italic;">    `K` is the convex cone corresponding to the implicit constraint on `X`</span>
+<span style="font-style: italic;">    """</span>
+    <span style="font-weight: bold;">for</span> (opt_var, v) <span style="font-weight: bold;">in</span> g.items():
+        <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">all</span>(<span style="font-weight: bold;">not</span> attr <span style="font-weight: bold;">for</span> attr <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">list</span>(<span style="font-weight: bold;">map</span>(<span style="font-weight: bold;">lambda</span> x: x[1], opt_var.attributes.items()))):
+            <span style="font-style: italic;">"""Case when the variable doesn't have any special attributes"""</span>
+            <span style="font-weight: bold; font-style: italic;">norm</span> = np.linalg.norm(v.data) / np.sqrt(opt_var.size)
+            <span style="font-weight: bold;">if</span> norm &gt; 10**(-places):
+                bad_norms.append((norm, opt_var))
+        <span style="font-weight: bold;">else</span>:
+            <span style="font-weight: bold;">if</span> opt_var.is_psd():
+                <span style="font-style: italic;">"""The PSD cone is self-dual"""</span>
+                <span style="font-weight: bold; font-style: italic;">g_bad_mat</span> = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                <span style="font-weight: bold; font-style: italic;">tmp_con</span> = g_bad_mat &gt;&gt; 0
+                <span style="font-weight: bold; font-style: italic;">dual_cone_violation</span> = tmp_con.residual
+                <span style="font-weight: bold;">if</span> dual_cone_violation &gt; 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            <span style="font-weight: bold;">elif</span> opt_var.is_nsd():
+                <span style="font-style: italic;">"""The NSD cone is also self-dual"""</span>
+                <span style="font-weight: bold; font-style: italic;">g_bad_mat</span> = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                <span style="font-weight: bold; font-style: italic;">tmp_con</span> = g_bad_mat &lt;&lt; 0
+                <span style="font-weight: bold; font-style: italic;">dual_cone_violation</span> = tmp_con.residual
+                <span style="font-weight: bold;">if</span> dual_cone_violation &gt; 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            <span style="font-weight: bold;">elif</span> opt_var.is_diag():
+                <span style="font-style: italic;">"""The dual cone to the set of diagonal matrices is the set of</span>
+<span style="font-style: italic;">                    'Hollow' matrices i.e. matrices with diagonal entries zero"""</span>
+                <span style="font-weight: bold; font-style: italic;">g_bad_mat</span> = np.reshape(g[opt_var].toarray(), opt_var.shape)
+                <span style="font-weight: bold; font-style: italic;">diag_entries</span> = np.diag(opt_var.value)
+                <span style="font-weight: bold; font-style: italic;">dual_cone_violation</span> = np.linalg.norm(diag_entries) / np.sqrt(opt_var.size)
+                <span style="font-weight: bold;">if</span> diag_entries &gt; 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            <span style="font-weight: bold;">elif</span> opt_var.is_symmetric():
+                <span style="font-style: italic;">"""The dual cone to the set of symmetric matrices is the</span>
+<span style="font-style: italic;">                set of skew-symmetric matrices, so we check if dLdX \in</span>
+<span style="font-style: italic;">                set(skew-symmetric-matrices)</span>
+<span style="font-style: italic;">                g[opt_var] is the problematic gradient in question"""</span>
+                <span style="font-weight: bold; font-style: italic;">g_bad_mat</span> = np.reshape(g[opt_var].toarray(), opt_var.shape)
+                <span style="font-weight: bold; font-style: italic;">mat</span> = g_bad_mat + g_bad_mat.T
+                <span style="font-weight: bold; font-style: italic;">dual_cone_violation</span> = np.linalg.norm(mat) / np.sqrt(opt_var.size)
+                <span style="font-weight: bold;">if</span> dual_cone_violation &gt; 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            <span style="font-weight: bold;">elif</span> opt_var.is_nonpos():
+                <span style="font-style: italic;">"""The cone of matrices with all entries nonpos is self-dual"""</span>
+                <span style="font-weight: bold; font-style: italic;">g_bad_mat</span> = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                <span style="font-weight: bold; font-style: italic;">tmp_con</span> = g_bad_mat &lt;= 0
+                <span style="font-weight: bold; font-style: italic;">dual_cone_violation</span> = np.linalg.norm(tmp_con.residual) / np.sqrt(opt_var.size)
+                <span style="font-weight: bold;">if</span> dual_cone_violation &gt; 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            <span style="font-weight: bold;">elif</span> opt_var.is_nonneg():
+                <span style="font-style: italic;">"""The cone of matrices with all entries nonneg is self-dual"""</span>
+                <span style="font-weight: bold; font-style: italic;">g_bad_mat</span> = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                <span style="font-weight: bold; font-style: italic;">tmp_con</span> = g_bad_mat &gt;= 0
+                <span style="font-weight: bold; font-style: italic;">dual_cone_violation</span> = np.linalg.norm(tmp_con.residual) / np.sqrt(opt_var.size)
+                <span style="font-weight: bold;">if</span> dual_cone_violation &gt; 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+
+    <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">len</span>(bad_norms):
+        <span style="font-weight: bold; font-style: italic;">msg</span> = f<span style="font-style: italic;">"""</span><span style="font-weight: bold; text-decoration: underline;">\n</span>
+<span style="font-style: italic;">    The gradient of Lagrangian with respect to the primal variables</span>
+<span style="font-style: italic;">    is above the threshold of 10^</span>{-places}<span style="font-style: italic;">. The names of the problematic</span>
+<span style="font-style: italic;">    variables and the corresponding gradient norms are as follows:</span>
+<span style="font-style: italic;">        """</span>
+        <span style="font-weight: bold;">for</span> norm, opt_var <span style="font-weight: bold;">in</span> bad_norms:
+            <span style="font-weight: bold; font-style: italic;">msg</span> += f<span style="font-style: italic;">"</span><span style="font-weight: bold; text-decoration: underline;">\n\t\t\t</span>{opt_var.name}<span style="font-style: italic;"> : </span>{norm}<span style="font-style: italic;">"</span>
+        <span style="font-weight: bold; font-style: italic;">msg</span> += <span style="font-style: italic;">'</span><span style="font-weight: bold; text-decoration: underline;">\n</span><span style="font-style: italic;">'</span>
+        <span style="font-weight: bold;">self</span>.tester.fail(msg)
+    <span style="font-weight: bold;">pass</span>
+</pre>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 29.0.92 (<a href="https://orgmode.org">Org</a> mode 9.6.6)</p>
+<p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 29.1 (<a href="https://orgmode.org">Org</a> mode 9.6.6)</p>
 </div>
 </body>
 </html>
