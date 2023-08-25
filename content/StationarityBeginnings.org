@@ -37,6 +37,11 @@ In this subsection, I want to discuss one of our early implementations of the me
 
 Derivatives are computed using the =grad= facility in CVXPY. The =grad= method is defined for (/almost/) every =Atom= within CVXPY (examples of current exceptions include the =von_neumann_entr= for instance). As far as the construction of the Lagrangian is concerned, we need to include the contribution from the objective function within the same --- this can be accessed via =cp.Problem.objective.expr= (the objective of any CVXPY problem would be a function of the decision variables constructed using a combination of several =Atom= classes in CVXPY. Care must be taken to ensure that the resulting problem is =DCP= in nature).
 
+There are two major issues that we faced at this juncture:
+1. Differing sign of the contribution from different =Constraint= objects
+2. Being able to move constraint functions into the Lagrangian
+
+
 Moving the objective function into the Lagrangian is easy enough, but what about the constraints? Constraints are represented in CVXPY via the =Constraint= class. What we need to move into the Lagrangian in this case, are the /constraint functions/, i.e., for some constraint $f_{i}(x) \leq g_{i}(x)$, we would add the contribution $(f_{i}(x) - g_{i}(x))$ (with it's corresponding lagrangian multiplier, $\lambda_{i}$) --- consequently, for verifying stationarity, we would be expected to differentiate this particular contribution.
 
 However, in CVXPY, there is no easy way to access these constraint functions from constructed =Constraint= objects. However, there is a fairly convenient path that already exists within CVXPY for our purpose. For this, we make the following observation (here the lagrangian mutiplier corresponding to $h_{i}(x)$ is $\lambda_{i}$)
@@ -57,7 +62,7 @@ Also, for checking what gradients are problematic within the final computation, 
 
 For supporting new =Constraint= sets in CVXPY for stationarity calculations, we would require dual variable recovery to be implemented for the same (for example, =PowConeND, RelEntrConeQuad= and =OpRelEntrConeQuad= do not have computation of dual variables implemented as of this date).
 
-Similarly, for supporting new =Atom= functions for stationarity calculations, we would need to be able to compute their derivatives (or more generally, their /subgradients/)
+Similarly, for supporting new =Atom= functions for stationarity calculations, we would need to be able to compute their derivatives (or more generally, their /subgradients/, which is a major addition we plan on working later on via the introduction of a new =ConvexSet= class) via the =grad= facility.
 
 Here is our first implementation. It should be read fairly easily with the above prose in mind.
 #+begin_src python
@@ -97,4 +102,142 @@ def check_stationary_lagrangian(self, places) -> None:
             msg += '\n'
             self.tester.fail(msg)
         pass
+#+end_src
+
+The next biggest issue that we face is that CVXPY allows users to pass in certain constraints on variables implicitly via flags during their initialization. Note, by our current convention of defining the Lagrangian, we are only moving the objective function and the constraints that have been explicitly passed in by the user to the problem into the Lagrangian. However, we cannot do this in the case of constraints imposed on variables via flags at initialization time --- for the same we had to interpret the stationarity condition in a slightly more general sense, as described in the next section.
+** The final implementation --- handling flag constraints:
+A more general way to interpret stationarity is via the characterization of the dual cone of the domain of the variable w.r.t we are differentiating (henceforth called the /differentat-er/ XD). Specifically, in the case when there are no implicit constraints on the domain of the /differentiat-er/, i.e. when the domain of the same is $\mathbb{R}^{n\times n}$, the dual cone of the same is the singleton set containing the zero element $\mathbb{R^{n\times n}}$. Similarly, in the case when the decision variable that is playing the role of the /differentiat-er/ is constrained to lie in some cone non-trivial cone $K$, we will instead check if the resultant gradient lies in it's corresponding dual cone $K^{*}$.
+
+As of today, the different kinds of (real and conic) constraints that CVXPY allows users to impose via flags are the following:
+#+begin_src python
+nonneg : bool
+nonpos : bool
+symmetric : bool
+diag : bool
+PSD : bool
+NSD : bool
+pos : bool
+neg : bool
+#+end_src
+CVXPY also supports =boolean, integer= but *MIP's* (Mixed Integer Programs) cannot be differentiated through.
+
+Of these, we do not support diagonal matrices via =diag= (the cone dual to the cone of diagonal matrices is the set of matrices which have all diagonal elements zero, the so-called /hollow matrices/) as of now because of their peculiar internal reprsentation within CVXPY (via =SciPy CSC= matrices). The dual-cones for all of the others and how they've been implemented has been detailed in the code snippet below. For all flags with the exception of =symmetric=, we follow the same pattern of first constructing the constraint corresponding to the dual cone of the domain cone and computing the violation of the gradient w.r.t the same by chcecking the =residual= property. For example, here is how the current code for =symmetric= would be adapted to the same pattern:
+#+begin_src python
+if opt_var.is_symmetric():
+    """The cone of skew-symmetric matrices is dual to the cone
+    of symmetric matrices"""
+    g_bad_mat = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+    tmp_con = g_bad_mat == -g_bad_mat.T
+    dual_cone_violation = tmp_con.residual
+    if dual_cone_violation > 10**(-places):
+        # some code
+        pass
+#+end_src
+Here is the final implementation of =check_stationarity_lagrangian=. Again, most of this should follow directly from the prose above, another point worthy of note is the order of the flag tests. We check for =PSD/NSD= before =symmetric= because when a user declares a variable =PSD/NSD=True= CVXPY additionally also sets =symmetric=True= (this is not done when the user explicitly passes in the constraint =X << 0= or =X >> 0=).
+#+begin_src python
+def check_stationary_lagrangian(self, places) -> None:
+    L = self.prob.objective.expr
+    objective = self.prob.objective
+    if objective.NAME == 'minimize':
+        L = objective.expr
+    else:
+        L = -objective.expr
+    for con in self.constraints:
+        if isinstance(con, (cp.constraints.Inequality,
+                            cp.constraints.Equality)):
+            dual_var_value = con.dual_value
+            prim_var_expr = con.expr
+            L = L + cp.scalar_product(dual_var_value, prim_var_expr)
+        elif isinstance(con, (cp.constraints.ExpCone,
+                                cp.constraints.SOC,
+                                cp.constraints.Zero,
+                                cp.constraints.NonNeg,
+                                cp.constraints.PSD,
+                                cp.constraints.PowCone3D)):
+            L = L - cp.scalar_product(con.args, con.dual_value)
+        else:
+            raise NotImplementedError()
+    try:
+        g = L.grad
+    except TypeError as e:
+        assert 'is not subscriptable' in str(e)
+        msg = """\n
+        CVXPY problems with `diag` variables are not supported for
+        stationarity checks as of now
+        """
+        self.tester.fail(msg)
+    bad_norms = []
+
+    """The convention that we follow for construting the Lagrangian is: 1) Move all
+    explicitly passed constraints to the problem (via Problem.constraints) into the
+    Lagrangian --- dLdX == 0 for any such variables 2) Constraints that have
+    implicitly been imposed on variables at the time of declaration via specific
+    flags (e.g.: PSD/symmetric etc.), in such a case we check, `dLdX\in K^{*}`, where
+    `K` is the convex cone corresponding to the implicit constraint on `X`
+    """
+    for (opt_var, v) in g.items():
+        if all(not attr for attr in list(map(lambda x: x[1], opt_var.attributes.items()))):
+            """Case when the variable doesn't have any special attributes"""
+            norm = np.linalg.norm(v.data) / np.sqrt(opt_var.size)
+            if norm > 10**(-places):
+                bad_norms.append((norm, opt_var))
+        else:
+            if opt_var.is_psd():
+                """The PSD cone is self-dual"""
+                g_bad_mat = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                tmp_con = g_bad_mat >> 0
+                dual_cone_violation = tmp_con.residual
+                if dual_cone_violation > 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            elif opt_var.is_nsd():
+                """The NSD cone is also self-dual"""
+                g_bad_mat = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                tmp_con = g_bad_mat << 0
+                dual_cone_violation = tmp_con.residual
+                if dual_cone_violation > 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            elif opt_var.is_diag():
+                """The dual cone to the set of diagonal matrices is the set of
+                    'Hollow' matrices i.e. matrices with diagonal entries zero"""
+                g_bad_mat = np.reshape(g[opt_var].toarray(), opt_var.shape)
+                diag_entries = np.diag(opt_var.value)
+                dual_cone_violation = np.linalg.norm(diag_entries) / np.sqrt(opt_var.size)
+                if diag_entries > 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            elif opt_var.is_symmetric():
+                """The dual cone to the set of symmetric matrices is the
+                set of skew-symmetric matrices, so we check if dLdX \in
+                set(skew-symmetric-matrices)
+                g[opt_var] is the problematic gradient in question"""
+                g_bad_mat = np.reshape(g[opt_var].toarray(), opt_var.shape)
+                mat = g_bad_mat + g_bad_mat.T
+                dual_cone_violation = np.linalg.norm(mat) / np.sqrt(opt_var.size)
+                if dual_cone_violation > 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            elif opt_var.is_nonpos():
+                """The cone of matrices with all entries nonpos is self-dual"""
+                g_bad_mat = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                tmp_con = g_bad_mat <= 0
+                dual_cone_violation = np.linalg.norm(tmp_con.residual) / np.sqrt(opt_var.size)
+                if dual_cone_violation > 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+            elif opt_var.is_nonneg():
+                """The cone of matrices with all entries nonneg is self-dual"""
+                g_bad_mat = cp.Constant(np.reshape(g[opt_var].toarray(), opt_var.shape))
+                tmp_con = g_bad_mat >= 0
+                dual_cone_violation = np.linalg.norm(tmp_con.residual) / np.sqrt(opt_var.size)
+                if dual_cone_violation > 10**(-places):
+                    bad_norms.append((dual_cone_violation, opt_var))
+
+    if len(bad_norms):
+        msg = f"""\n
+    The gradient of Lagrangian with respect to the primal variables
+    is above the threshold of 10^{-places}. The names of the problematic
+    variables and the corresponding gradient norms are as follows:
+        """
+        for norm, opt_var in bad_norms:
+            msg += f"\n\t\t\t{opt_var.name} : {norm}"
+        msg += '\n'
+        self.tester.fail(msg)
+    pass
 #+end_src
