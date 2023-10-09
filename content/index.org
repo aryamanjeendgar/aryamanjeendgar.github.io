@@ -11,16 +11,18 @@
 #+attr_html: :style float:left; max-width:25%;margin-left:auto;margin-right:auto;padding-right:10px;border-radius:50%
 [[file:./me.jpg]]
 
-Hi! I am Aryaman Jeendgar, a 4th year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
+Hi! I am Aryaman Jeendgar, a final year undergrad from BITS Pilani, Hyderabad Campus double majoring in Physics and Electronics and Communications engineering.
 
-Broadly, I am interested in research problems with a mathematical flavor, and love writing code to serve solutions to such problems!
+Broadly, I am interested problems in Optimization Theory and their exciting intersection with modern Deep Learning, and love writing code to serve solutions to such problems!
 
-I am currently a *Research Engineer Fellow* @ Princeton University (under /Princeton Research Computing/), contributing to the ongoing =scikit-HEP= effort. I am also participating as a part of the =GSoC-2023= program, where I am (once again!) contributing to CVXPY!
+I am currently pursuing the first half of my undergraduate thesis at /Sandia National Laboratories/ where I am working with [[https://rileyjmurray.wordpress.com][/Dr. Riley J. Murray/]] on problems related to the Operator Relative Entropy Cone and making more technical contributions to the CVXPY codebase in the process!
 
-I will be spending the first chunk of my undergraduate thesis working with [[https://rileyjmurray.wordpress.com/][Dr. Riley J. Murray]] at /Sandia National Laboratories/, where I will be working on theoretical problems concerning the Operator Relative Entropy!
+I am also simultaneously working as a *Research Intern* @ TCS Research with [[https://mayank-baranwal.web.app][/Prof. Mayank Baranwal/]] and /Dr. Kushal Chakrabarti/ on problems related to second-order neural network training dynamics, and analyzing them from an ODE-perspective!
 
-I spent the summer of /'22/ writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Cloud Systems/ Research group!
+I spent the summer of /'23/ as a *Research Engineer Fellow* @ Princeton University (under /Princeton Research Computing/), where I worked with [[https://github.com/henryiii][/Dr. Henry Schreiner/]], contributing to the ongoing =scikit-HEP= effort. I also participated in the =GSoC-2023= program, where I (once again!) contributed to CVXPY!
 
-In the past, I have worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] /(BITS Goa)/ and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] /(Wadhwani AI)/, a pre-print of our latest work can be found [[https://arxiv.org/abs/2206.09333][*HERE*]]
+I spent the summer of /'22/ writing open source code for [[https://www.cvxpy.org/][CVXPY]], under the [[https://summerofcode.withgoogle.com/][GSoC-2022]] program and interning at Intel Labs in the /Cloud Systems/ Research group, where I worked with /Dr. Sameh Gobriel/ on online optimization approaches to scaling out Nearest Neigbour Search queries for graph databases.
+
+In the past, I worked with [[https://www.bits-pilani.ac.in/goa/snehanshus/profile][Professor Snehanshu Saha]] /(BITS Goa)/ and [[https://www.wadhwaniai.org/team/soma-dhavala/][Mr. Soma S. Dhavala]] /(Wadhwani AI)/ on problems related to quantile regression in the context of neural networks and systematic methods for accelerating training for such scenarios, a pre-print of our latest work can be found [[https://arxiv.org/abs/2206.09333][*HERE*]]
 
 #+HTML: <br><footer><a href="https://www.linkedin.com/in/aryaman-jeendgar-63a012210/">LinkedIn</a><br><a href="https://github.com/aryamanjeendgar">GitHub</a></footer>
