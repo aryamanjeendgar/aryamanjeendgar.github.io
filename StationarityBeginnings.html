@@ -48,10 +48,10 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org521eaf1">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</a>
+<li><a href="#orge379172">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</a>
 <ul>
-<li><a href="#org44df590">A first attempt at the problem &#x2014; immediate concerns:</a></li>
-<li><a href="#org951f2f7">The final implementation &#x2014; handling flag constraints:</a></li>
+<li><a href="#org457f784">A first attempt at the problem &#x2014; immediate concerns:</a></li>
+<li><a href="#org48e8e59">The final implementation &#x2014; handling flag constraints:</a></li>
 </ul>
 </li>
 </ul>
@@ -71,7 +71,7 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="index.html#orgfa58d3c">About</a></td>
+<td class="org-left"><a href="index.html#org972df52">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
@@ -79,9 +79,9 @@
 </tbody>
 </table>
 
-<div id="outline-container-org521eaf1" class="outline-2">
-<h2 id="org521eaf1">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</h2>
-<div class="outline-text-2" id="text-org521eaf1">
+<div id="outline-container-orge379172" class="outline-2">
+<h2 id="orge379172">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</h2>
+<div class="outline-text-2" id="text-orge379172">
 <p>
 <span class="timestamp-wrapper"><span class="timestamp">&lt;2023-07-13 Thu&gt;</span></span><br />
 </p>
@@ -136,9 +136,9 @@ Since CVXPY does not explicitly construct the Lagrangian, we had to do as much i
 </p>
 </div>
 
-<div id="outline-container-org44df590" class="outline-3">
-<h3 id="org44df590">A first attempt at the problem &#x2014; immediate concerns:</h3>
-<div class="outline-text-3" id="text-org44df590">
+<div id="outline-container-org457f784" class="outline-3">
+<h3 id="org457f784">A first attempt at the problem &#x2014; immediate concerns:</h3>
+<div class="outline-text-3" id="text-org457f784">
 <p>
 In this subsection, I want to discuss one of our early implementations of the method. Before I do that, I want to talk about how we will be computing and representing derivatives of the Lagrangian.
 </p>
@@ -238,9 +238,9 @@ The next biggest issue that we face is that CVXPY allows users to pass in certai
 </p>
 </div>
 </div>
-<div id="outline-container-org951f2f7" class="outline-3">
-<h3 id="org951f2f7">The final implementation &#x2014; handling flag constraints:</h3>
-<div class="outline-text-3" id="text-org951f2f7">
+<div id="outline-container-org48e8e59" class="outline-3">
+<h3 id="org48e8e59">The final implementation &#x2014; handling flag constraints:</h3>
+<div class="outline-text-3" id="text-org48e8e59">
 <p>
 A more general way to interpret stationarity is via the characterization of the dual cone of the domain of the variable w.r.t we are differentiating (henceforth called the <i>differentat-er</i> XD). Specifically, in the case when there are no implicit constraints on the domain of the <i>differentiat-er</i>, i.e. when the domain of the same is \(\mathbb{R}^{n\times n}\), the dual cone of the same is the singleton set containing the zero element \(\mathbb{R^{n\times n}}\). Similarly, in the case when the decision variable that is playing the role of the <i>differentiat-er</i> is constrained to lie in some cone non-trivial cone \(K\), we will instead check if the resultant gradient lies in it's corresponding dual cone \(K^{*}\).
 </p>
@@ -394,7 +394,7 @@ Here is the final implementation of <code>check_stationarity_lagrangian</code>. 
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 29.2 (<a href="https://orgmode.org">Org</a> mode 9.6.15)</p>
+<p class="creator"><a href="https://www.gnu.org/software/emacs/">Emacs</a> 29.3 (<a href="https://orgmode.org">Org</a> mode 9.6.15)</p>
 </div>
 </body>
 </html>
