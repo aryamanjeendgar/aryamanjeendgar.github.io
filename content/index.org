@@ -15,7 +15,9 @@ Hi! I am Aryaman Jeendgar, a final year undergrad from BITS Pilani, Hyderabad Ca
 
 Broadly, I am interested problems in Optimization Theory and their exciting intersection with modern Deep Learning, and love writing code to serve solutions to such problems!
 
-I will be pursuing the second half of my undergraduate thesis at =CERN= where my visit will be generously funded by /The Department of Physics, Princeton University/. I plan on working with [[https://www.lieret.net][/Dr. Kilian Lieret/]] on problems concerning a data-driven pipeline for charged particle trajectory prediction and parallely, work with [[https://github.com/henryiii][/Dr. Henry Schreiner/]] on building =scikit-build-core=. If you're around in Geneva starting Jan 2024 (or close by in the EU), HMU!
+Starting /August 2024/, I will be joining the [[https://www.icsi.berkeley.edu][/International Computer Science Institute, Berkeley/]] as a visiting scholar till July 2025, where I will work with [[https://www.stat.berkeley.edu/~mmahoney/][/Prof. Michael Mahoney's/]] group on problems in Randomized Numerical Linear Algebra!!! If you're in California during this time, HMU!!!
+
+I successfully finished the second half of my undergraduate thesis at =CERN= where my visit was generously funded by /The Department of Physics, Princeton University/. I worked with [[https://www.lieret.net][/Dr. Kilian Lieret/]] on problems concerning a data-driven pipeline for charged particle trajectory prediction and parallely, worked with [[https://github.com/henryiii][/Dr. Henry Schreiner/]] on building =scikit-build-core=.
 
 I successfully finished the first half of my undergraduate thesis at the /International Computer Science Institute, UC Berkeley/ where I worked with [[https://rileyjmurray.wordpress.com][/Dr. Riley J. Murray/]] on problems related to the Operator Relative Entropy Cone and made more technical contributions to the CVXPY codebase in the process! You can find my thesis [[file:./Aryaman__Thesis.pdf][*here*]]
 
