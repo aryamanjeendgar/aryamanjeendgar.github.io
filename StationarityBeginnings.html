@@ -48,10 +48,10 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org6d724b9">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</a>
+<li><a href="#org2d4e6cf">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</a>
 <ul>
-<li><a href="#org80878f7">A first attempt at the problem &#x2014; immediate concerns:</a></li>
-<li><a href="#org745e033">The final implementation &#x2014; handling flag constraints:</a></li>
+<li><a href="#orgc133f55">A first attempt at the problem &#x2014; immediate concerns:</a></li>
+<li><a href="#orge94c294">The final implementation &#x2014; handling flag constraints:</a></li>
 </ul>
 </li>
 </ul>
@@ -71,16 +71,16 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="org-left"><a href="index.html#org1301171">About</a></td>
+<td class="org-left"><a href="index.html#orgaf1ef70">About</a></td>
 <td class="org-left"><a href="blog.html">Blog</a></td>
 <td class="org-left"><a href="cv.html">CV</a></td>
 <td class="org-left"><a href="PaperReviews.html">Papers to Read</a></td>
 </tr>
 </tbody>
 </table>
-<div id="outline-container-org6d724b9" class="outline-2">
-<h2 id="org6d724b9">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</h2>
-<div class="outline-text-2" id="text-org6d724b9">
+<div id="outline-container-org2d4e6cf" class="outline-2">
+<h2 id="org2d4e6cf">Adding in support for verifying <i>Stationarity</i> (for differentiable functions) in CVXPY:</h2>
+<div class="outline-text-2" id="text-org2d4e6cf">
 <p>
 <span class="timestamp-wrapper"><span class="timestamp">&lt;2023-07-13 Thu&gt;</span></span><br />
 </p>
@@ -134,9 +134,9 @@ Conditions 3 and 4 simply ensure feasibility of the computed solution, and are p
 Since CVXPY does not explicitly construct the Lagrangian, we had to do as much in our verification of it's stationarity. The major delievrable of this PR is the <code>check_stationarity_lagrangian</code> method &#x2014; which for the time being has been defined within the <code>SolverTestHelper</code> class (that stays in the <code>solver_test_helpers.py</code> file). The reason for this is that the class also has several other methods which can be used to verify the other KKT conditions (including a ~more or less working implementation for verifying complementarity and a partial implementation for verifying dual feasibility &#x2014; which will be the next subject of our work).
 </p>
 </div>
-<div id="outline-container-org80878f7" class="outline-3">
-<h3 id="org80878f7">A first attempt at the problem &#x2014; immediate concerns:</h3>
-<div class="outline-text-3" id="text-org80878f7">
+<div id="outline-container-orgc133f55" class="outline-3">
+<h3 id="orgc133f55">A first attempt at the problem &#x2014; immediate concerns:</h3>
+<div class="outline-text-3" id="text-orgc133f55">
 <p>
 In this subsection, I want to discuss one of our early implementations of the method. Before I do that, I want to talk about how we will be computing and representing derivatives of the Lagrangian.
 </p>
@@ -236,9 +236,9 @@ The next biggest issue that we face is that CVXPY allows users to pass in certai
 </p>
 </div>
 </div>
-<div id="outline-container-org745e033" class="outline-3">
-<h3 id="org745e033">The final implementation &#x2014; handling flag constraints:</h3>
-<div class="outline-text-3" id="text-org745e033">
+<div id="outline-container-orge94c294" class="outline-3">
+<h3 id="orge94c294">The final implementation &#x2014; handling flag constraints:</h3>
+<div class="outline-text-3" id="text-orge94c294">
 <p>
 A more general way to interpret stationarity is via the characterization of the dual cone of the domain of the variable w.r.t we are differentiating (henceforth called the <i>differentat-er</i> XD). Specifically, in the case when there are no implicit constraints on the domain of the <i>differentiat-er</i>, i.e. when the domain of the same is \(\mathbb{R}^{n\times n}\), the dual cone of the same is the singleton set containing the zero element \(\mathbb{R^{n\times n}}\). Similarly, in the case when the decision variable that is playing the role of the <i>differentiat-er</i> is constrained to lie in some cone non-trivial cone \(K\), we will instead check if the resultant gradient lies in it's corresponding dual cone \(K^{*}\).
 </p>
